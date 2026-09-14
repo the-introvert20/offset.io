@@ -7,6 +7,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
 
   // Form State
   const [region, setRegion] = useState('US');
@@ -20,6 +21,7 @@ export default function OnboardingPage() {
 
   const handleComplete = async () => {
     setLoading(true);
+    setSubmissionError(null);
     try {
       const res = await fetch('/api/onboarding', {
         method: 'POST',
@@ -37,7 +39,15 @@ export default function OnboardingPage() {
       });
 
       if (res.ok) {
+        router.refresh();
         router.push('/dashboard');
+      } else {
+        const data = await res.json().catch(() => null);
+        setSubmissionError(
+          data?.error === 'EMISSION_FACTOR_NOT_FOUND'
+            ? 'One of the selected activities does not have a matching emission factor. Choose a supported region, vehicle type, and diet pattern.'
+            : 'We could not generate your ledger. Please try again.'
+        );
       }
     } catch (err) {
       console.error(err);
@@ -268,11 +278,10 @@ export default function OnboardingPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {[
-                  { id: 'mixed', label: 'OMNIVORE (REGULAR RED MEAT & POULTRY)', factor: '~2,200 kg CO₂e/yr' },
-                  { id: 'low_meat', label: 'MEDITERRANEAN / LOW-MEAT', factor: '~1,700 kg CO₂e/yr' },
-                  { id: 'pescatarian', label: 'PESCATARIAN (FISH + DAIRY)', factor: '~1,500 kg CO₂e/yr' },
-                  { id: 'vegetarian', label: 'VEGETARIAN (DAIRY + EGGS)', factor: '~1,200 kg CO₂e/yr' },
-                  { id: 'vegan', label: '100% PLANT-BASED / VEGAN', factor: '~800 kg CO₂e/yr' },
+                  { id: 'high_meat', label: 'HIGH MEAT DIET', factor: '~2,600 kg CO₂e/yr' },
+                  { id: 'mixed', label: 'MIXED / OMNIVORE', factor: '~2,000 kg CO₂e/yr' },
+                  { id: 'vegetarian', label: 'VEGETARIAN (DAIRY + EGGS)', factor: '~1,400 kg CO₂e/yr' },
+                  { id: 'plant_based', label: '100% PLANT-BASED', factor: '~900 kg CO₂e/yr' },
                 ].map((d) => (
                   <button
                     key={d.id}
@@ -406,6 +415,7 @@ export default function OnboardingPage() {
               </button>
             )}
           </div>
+          {submissionError && <p role="alert" className="border border-error p-space-sm text-error font-bold">{submissionError}</p>}
         </div>
       </div>
     </div>

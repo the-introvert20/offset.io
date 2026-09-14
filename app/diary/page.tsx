@@ -15,6 +15,14 @@ interface DiaryEntry {
   notes?: string;
 }
 
+const CATEGORY_DEFAULTS: Record<string, { activityType: string; subtype: string; unit: string; quantity: number }> = {
+  TRANSPORTATION: { activityType: 'car', subtype: 'petrol', unit: 'km', quantity: 15 },
+  ENERGY: { activityType: 'electricity', subtype: 'grid_us', unit: 'kWh', quantity: 10 },
+  FOOD: { activityType: 'diet', subtype: 'mixed', unit: 'day', quantity: 1 },
+  CONSUMPTION: { activityType: 'clothing', subtype: 'general', unit: 'item', quantity: 1 },
+  WASTE: { activityType: 'waste', subtype: 'landfill', unit: 'kg', quantity: 1 },
+};
+
 export default function DiaryPage() {
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const [anomalyInfo, setAnomalyInfo] = useState<{
@@ -24,6 +32,7 @@ export default function DiaryPage() {
     stdDevKg?: number;
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Form state
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -51,6 +60,7 @@ export default function DiaryPage() {
 
   const handleAddEntry = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     try {
       const res = await fetch('/api/diary', {
         method: 'POST',
@@ -69,6 +79,9 @@ export default function DiaryPage() {
       if (res.ok) {
         setNotes('');
         fetchDiary();
+      } else {
+        const data = await res.json().catch(() => null);
+        setFormError(data?.error === 'EMISSION_FACTOR_NOT_FOUND' ? 'No matching emission factor is available for this activity. Choose a supported type, subtype, and unit.' : 'Unable to save this activity. Please check the values and try again.');
       }
     } catch (err) {
       console.error(err);
@@ -177,23 +190,11 @@ export default function DiaryPage() {
                   value={category}
                   onChange={(e) => {
                     setCategory(e.target.value);
-                    if (e.target.value === 'TRANSPORTATION') {
-                      setActivityType('car');
-                      setSubtype('petrol');
-                      setUnit('km');
-                    } else if (e.target.value === 'ENERGY') {
-                      setActivityType('electricity');
-                      setSubtype('grid_us');
-                      setUnit('kWh');
-                    } else if (e.target.value === 'FOOD') {
-                      setActivityType('meal');
-                      setSubtype('beef');
-                      setUnit('serving');
-                    } else {
-                      setActivityType('goods');
-                      setSubtype('clothing');
-                      setUnit('item');
-                    }
+                    const defaults = CATEGORY_DEFAULTS[e.target.value];
+                    setActivityType(defaults.activityType);
+                    setSubtype(defaults.subtype);
+                    setUnit(defaults.unit);
+                    setQuantity(defaults.quantity);
                   }}
                   className="w-full border border-on-surface p-space-xs font-label-caps-sm uppercase bg-surface-container-lowest font-bold cursor-pointer"
                 >
@@ -201,8 +202,11 @@ export default function DiaryPage() {
                   <option value="ENERGY">ENERGY &amp; RESIDENTIAL</option>
                   <option value="FOOD">FOOD &amp; DIET</option>
                   <option value="CONSUMPTION">GOODS &amp; CONSUMPTION</option>
+                  <option value="WASTE">WASTE</option>
                 </select>
               </div>
+
+              {formError && <p role="alert" className="border border-error p-space-xs text-sm text-error font-bold">{formError}</p>}
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
