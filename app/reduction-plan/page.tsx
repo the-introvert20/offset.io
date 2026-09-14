@@ -1,0 +1,289 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+
+interface OptimizationResponse {
+  currentAnnualKg: number;
+  optimization: {
+    targetEmissionsKg: number;
+    targetReductionKg: number;
+    projectedEmissionsKg: number;
+    achievedReductionKg: number;
+    achievedReductionPct: number;
+    totalMonthlyCost: number;
+    isTargetAchieved: boolean;
+    selectedActions: {
+      id: string;
+      title: string;
+      explanation: string;
+      category: string;
+      estimatedReductionKg: number;
+      estimatedCostMonthly: number;
+      difficulty: string;
+      priority: string;
+    }[];
+    unselectedActions: {
+      id: string;
+      title: string;
+      explanation: string;
+      category: string;
+      estimatedReductionKg: number;
+      estimatedCostMonthly: number;
+      difficulty: string;
+      priority: string;
+    }[];
+    explanation: string;
+    algorithmNote: string;
+  };
+}
+
+export default function ReductionPlanPage() {
+  const [targetPct, setTargetPct] = useState(20);
+  const [budget, setBudget] = useState(100);
+  const [excludeCategories, setExcludeCategories] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<OptimizationResponse | null>(null);
+
+  const toggleCategory = (cat: string) => {
+    if (excludeCategories.includes(cat)) {
+      setExcludeCategories(excludeCategories.filter((c) => c !== cat));
+    } else {
+      setExcludeCategories([...excludeCategories, cat]);
+    }
+  };
+
+  const handleOptimize = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch('/api/optimize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetReductionPct: targetPct,
+          maxMonthlyBudget: budget,
+          forbiddenCategories: excludeCategories,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setResult(data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col w-full text-on-surface bg-surface-container-lowest">
+      {/* Ticker Header */}
+      <section className="w-full bg-surface-container-low border-b border-on-surface flex flex-col md:flex-row items-stretch justify-between text-on-surface select-none">
+        <div className="px-space-md py-space-xs border-b md:border-b-0 md:border-r border-on-surface flex items-center space-x-space-sm bg-surface-container-lowest">
+          <span className="w-2.5 h-2.5 bg-coral-accent animate-pulse"></span>
+          <span className="font-label-caps-md text-label-caps-md uppercase tracking-wider text-on-surface font-bold">
+            REDUCTION PLAN // KNAPSACK OPTIMIZATION
+          </span>
+        </div>
+        <div className="px-space-md py-space-xs border-b md:border-b-0 md:border-r border-on-surface flex items-center flex-1 justify-center bg-surface-container-lowest">
+          <span className="font-label-caps-md text-label-caps-md uppercase tracking-wide text-on-surface">
+            BOUNDED GREEDY MARGINAL YIELD ALGORITHM // MULTI-CONSTRAINT SOLVER
+          </span>
+        </div>
+        <div className="px-space-md py-space-xs flex items-center justify-between md:justify-end space-x-space-md bg-secondary-fixed text-on-secondary-fixed">
+          <span className="font-label-caps-sm text-label-caps-sm uppercase tracking-widest font-bold">
+            TARGET: −{targetPct}% CO₂e DISPLACEMENT
+          </span>
+        </div>
+      </section>
+
+      {/* Main Container */}
+      <div className="p-space-lg md:p-space-xl space-y-space-lg">
+        <div className="border-b border-on-surface pb-space-sm">
+          <span className="font-label-caps-sm uppercase text-primary font-bold tracking-widest">
+            MATHEMATICAL ACTION ENGINE
+          </span>
+          <h1 className="font-headline text-headline-xl uppercase font-bold tracking-tight mt-1">
+            MAKE A DENT: REDUCTION PLAN
+          </h1>
+          <p className="font-body-md text-on-surface-variant max-w-3xl mt-1">
+            Compute the highest-yield combinations of behavioral shifts, infrastructure adjustments, and equipment upgrades under explicit financial budget constraints.
+          </p>
+        </div>
+
+        {/* Form and Controls */}
+        <form onSubmit={handleOptimize} className="border border-on-surface p-space-md bg-surface-container-low space-y-space-md">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+            {/* Target Slider */}
+            <div className="border border-on-surface p-space-sm bg-surface-container-lowest space-y-1">
+              <div className="flex justify-between items-center font-label-caps-md uppercase font-bold">
+                <span>TARGET REDUCTION</span>
+                <span className="text-primary font-headline text-headline-sm">−{targetPct}%</span>
+              </div>
+              <input
+                type="range"
+                min="5"
+                max="60"
+                step="5"
+                value={targetPct}
+                onChange={(e) => setTargetPct(Number(e.target.value))}
+                className="w-full accent-on-surface cursor-pointer h-2 bg-surface-container-highest"
+              />
+              <div className="flex justify-between font-label-caps-sm uppercase text-on-surface-variant font-bold">
+                <span>−5% (Gradual)</span>
+                <span>−20% (Paris Q4)</span>
+                <span>−60% (Aggressive)</span>
+              </div>
+            </div>
+
+            {/* Budget Slider */}
+            <div className="border border-on-surface p-space-sm bg-surface-container-lowest space-y-1">
+              <div className="flex justify-between items-center font-label-caps-md uppercase font-bold">
+                <span>MAX MONTHLY BUDGET</span>
+                <span className="text-secondary font-headline text-headline-sm">₹{budget} / MO</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="5000"
+                step="100"
+                value={budget}
+                onChange={(e) => setBudget(Number(e.target.value))}
+                className="w-full accent-on-surface cursor-pointer h-2 bg-surface-container-highest"
+              />
+              <div className="flex justify-between font-label-caps-sm uppercase text-on-surface-variant font-bold">
+                <span>₹0 (Zero cost)</span>
+                <span>₹1,000</span>
+                <span>₹5,000</span>
+              </div>
+            </div>
+
+            {/* Excluded Sectors */}
+            <div className="border border-on-surface p-space-sm bg-surface-container-lowest space-y-1">
+              <span className="font-label-caps-md uppercase font-bold block mb-1">
+                SECTOR EXCLUSIONS
+              </span>
+              <div className="grid grid-cols-2 gap-1 font-label-caps-sm uppercase font-bold">
+                {['TRANSPORTATION', 'ENERGY', 'FOOD', 'CONSUMPTION'].map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => toggleCategory(cat)}
+                    className={`p-1 border border-on-surface text-center truncate ${
+                      excludeCategories.includes(cat) ? 'bg-coral-accent text-white' : 'bg-surface-container-low text-on-surface'
+                    }`}
+                  >
+                    {excludeCategories.includes(cat) ? `🚫 ${cat.slice(0, 5)}` : cat.slice(0, 5)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center pt-2">
+            <span className="font-label-caps-sm uppercase text-on-surface-variant font-bold">
+              SOLVER: GREEDY FRACTIONAL KNAPSACK WITH VALUE-DENSITY HEURISTIC
+            </span>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-space-xl py-space-xs bg-on-surface text-surface-container-lowest font-label-caps-md uppercase font-bold border border-on-surface hover:bg-primary transition-none flex items-center space-x-1"
+            >
+              <span>{loading ? 'OPTIMIZING...' : 'SOLVE OPTIMAL ROADMAP →'}</span>
+            </button>
+          </div>
+        </form>
+
+        {/* Optimization Output */}
+        {result && (
+          <div className="space-y-space-lg">
+            {/* KPI Summary Banner */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 border border-on-surface">
+              <div className="p-space-md border-b sm:border-b-0 sm:border-r border-on-surface bg-surface-container-lowest">
+                <span className="font-label-caps-sm uppercase text-on-surface-variant font-bold block">BASE EMISSIONS</span>
+                <div className="font-display text-3xl font-bold mt-1">
+                  {(result.currentAnnualKg / 1000).toFixed(2)} <span className="text-sm font-headline">t CO₂e</span>
+                </div>
+              </div>
+
+              <div className="p-space-md border-b sm:border-b-0 sm:border-r border-on-surface bg-surface-container-lowest">
+                <span className="font-label-caps-sm uppercase text-primary font-bold block">PROJECTED EMISSIONS</span>
+                <div className="font-display text-3xl font-bold mt-1 text-primary">
+                  {(result.optimization.projectedEmissionsKg / 1000).toFixed(2)} <span className="text-sm font-headline">t CO₂e</span>
+                </div>
+              </div>
+
+              <div className="p-space-md border-b sm:border-b-0 sm:border-r border-on-surface bg-cyan-accent text-on-surface">
+                <span className="font-label-caps-sm uppercase font-bold block">ACHIEVED ABATEMENT</span>
+                <div className="font-display text-3xl font-bold mt-1">
+                  −{result.optimization.achievedReductionKg} <span className="text-sm font-headline">kg/yr</span>
+                </div>
+                <span className="font-label-caps-sm uppercase font-bold">
+                  ({result.optimization.achievedReductionPct.toFixed(1)}% DISPLACEMENT)
+                </span>
+              </div>
+
+              <div className="p-space-md bg-yellow-accent text-on-surface">
+                <span className="font-label-caps-sm uppercase font-bold block">MONTHLY BUDGET CONSUMED</span>
+                <div className="font-display text-3xl font-bold mt-1">
+                  ₹{result.optimization.totalMonthlyCost} <span className="text-sm font-headline">/ mo</span>
+                </div>
+                <span className="font-label-caps-sm uppercase font-bold">
+                  OUT OF ₹{budget} CAP
+                </span>
+              </div>
+            </div>
+
+            {/* Selected Interventions Grid */}
+            <div className="border border-on-surface bg-surface-container-lowest p-space-lg space-y-space-md">
+              <div className="flex items-center justify-between border-b border-on-surface pb-space-xs font-label-caps-md uppercase font-bold">
+                <span>MATHEMATICALLY RANKED ACTIONS ({result.optimization.selectedActions.length})</span>
+                <span className="text-primary font-bold">STATUS: {result.optimization.isTargetAchieved ? 'TARGET ACHIEVED' : 'PARTIAL COVERAGE'}</span>
+              </div>
+
+              <div className="space-y-space-xs">
+                {result.optimization.selectedActions.map((action, idx) => (
+                  <div
+                    key={action.id || idx}
+                    className="p-space-md border border-on-surface bg-surface-container-lowest flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-surface-container-low transition-none"
+                  >
+                    <div className="flex items-start space-x-space-md">
+                      <span className="w-8 h-8 bg-on-surface text-surface-container-lowest flex items-center justify-center font-label-caps-sm font-bold shrink-0">
+                        {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}
+                      </span>
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <span className="font-label-caps-md uppercase font-bold text-on-surface">{action.title}</span>
+                          <span className="px-space-xs py-0.5 border border-on-surface bg-surface-container font-label-caps-sm uppercase font-bold">
+                            {action.category}
+                          </span>
+                        </div>
+                        <p className="font-body-sm text-on-surface-variant mt-1">{action.explanation}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0">
+                      <span className="px-space-xs py-0.5 bg-cyan-accent text-on-surface font-label-caps-sm uppercase font-bold border border-on-surface">
+                        −{action.estimatedReductionKg} kg CO₂e
+                      </span>
+                      <span className="font-label-caps-sm uppercase text-on-surface-variant font-bold mt-1">
+                        {action.estimatedCostMonthly > 0 ? `₹${action.estimatedCostMonthly}/mo` : '₹0 (Free)'} • {action.difficulty}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-space-md p-space-sm bg-surface-container border border-on-surface font-label-caps-sm uppercase text-on-surface-variant">
+                <strong>Algorithm note:</strong> {result.optimization.algorithmNote || 'Actions sorted by marginal emission reduction yield per rupee expended.'}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

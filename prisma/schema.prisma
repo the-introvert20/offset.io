@@ -1,0 +1,195 @@
+// Prisma Schema for offset.io Personal Carbon Intelligence Platform
+// Compatible with both SQLite (zero-config local) & PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String          @id @default(uuid())
+  email         String          @unique
+  passwordHash  String
+  name          String
+  role          String          @default("USER") // USER, ADMIN
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  profile       Profile?
+  activities    Activity[]
+  calculations  Calculation[]
+  scenarios     Scenario[]
+  goals         CarbonGoal[]
+  diaryEntries  DiaryEntry[]
+  insights      Insight[]
+  recommendations Recommendation[]
+}
+
+model Profile {
+  id                 String   @id @default(uuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  region             String   @default("GLOBAL") // US, EU, UK, IN, GLOBAL
+  dietPattern        String   @default("MIXED")   // PLANT_BASED, VEGETARIAN, MIXED, HIGH_MEAT
+  householdSize      Int      @default(1)
+  primaryTransport   String   @default("CAR_PETROL")
+  targetReductionPct Float    @default(20.0)
+  monthlyBudget      Float    @default(2000.0)    // Monthly financial budget for green actions
+  currency           String   @default("USD")     // USD, EUR, GBP, INR
+  onboardingComplete Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model EmissionFactor {
+  id               String     @id @default(uuid())
+  category         String     // TRANSPORTATION, ENERGY, FOOD, CONSUMPTION, WASTE
+  activity         String     // e.g. "car", "electricity", "flight", "diet", "waste"
+  subtype          String     // e.g. "petrol", "diesel", "ev", "grid_us", "mixed_diet"
+  region           String     @default("GLOBAL")
+  unit             String     // e.g. "km", "kWh", "day", "kg", "passenger_km"
+  factor           Float      // kg CO2e per unit
+  source           String
+  sourceUrl        String?
+  methodologyNote  String?
+  validFrom        DateTime?
+  validTo          DateTime?
+  confidenceLevel  String     @default("HIGH") // HIGH, MEDIUM, LOW
+  isActive         Boolean    @default(true)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  @@index([category, activity, region])
+  @@unique([category, activity, subtype, region, unit, isActive])
+}
+
+model Activity {
+  id           String    @id @default(uuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category     String    // TRANSPORTATION, ENERGY, FOOD, CONSUMPTION, WASTE
+  activityType String    // e.g. "car", "electricity", "diet", "flight", "waste"
+  subtype      String    // e.g. "petrol", "diesel", "grid", "mixed"
+  frequency    String    @default("MONTHLY") // DAILY, WEEKLY, MONTHLY, YEARLY
+  quantity     Float
+  unit         String
+  region       String    @default("GLOBAL")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([userId, category])
+}
+
+model Calculation {
+  id                 String     @id @default(uuid())
+  userId             String
+  user               User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category           String
+  activityType       String
+  annualEmissionsKg  Float
+  monthlyEmissionsKg Float
+  dailyEmissionsKg   Float
+  factorUsed         Float
+  formula            String
+  confidenceLevel    String     @default("HIGH")
+  minEmissionsKg     Float
+  maxEmissionsKg     Float
+  breakdownJson      String     // JSON audit trail object
+  createdAt          DateTime   @default(now())
+}
+
+model Scenario {
+  id                      String             @id @default(uuid())
+  userId                  String
+  user                    User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name                    String
+  description             String?
+  isBaseline              Boolean            @default(false)
+  totalAnnualEmissionsKg  Float
+  estimatedCostDeltaMonthly Float           @default(0.0)
+  activities              ScenarioActivity[]
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
+
+  @@index([userId])
+}
+
+model ScenarioActivity {
+  id           String    @id @default(uuid())
+  scenarioId   String
+  scenario     Scenario  @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  category     String
+  activityType String
+  subtype      String
+  frequency    String    @default("MONTHLY")
+  quantity     Float
+  unit         String
+  region       String    @default("GLOBAL")
+}
+
+model Recommendation {
+  id                  String     @id @default(uuid())
+  userId              String?
+  user                User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title               String
+  explanation         String
+  category            String     // TRANSPORTATION, ENERGY, FOOD, CONSUMPTION, WASTE
+  estimatedReductionKg Float
+  estimatedCostMonthly Float     @default(0.0)
+  difficulty          String     @default("MEDIUM") // EASY, MEDIUM, HARD
+  priority            String     @default("MEDIUM") // HIGH, MEDIUM, LOW
+  prerequisites       String?
+  createdAt           DateTime   @default(now())
+}
+
+model CarbonGoal {
+  id                       String     @id @default(uuid())
+  userId                   String
+  user                     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetAnnualEmissionsKg  Float
+  targetMonthlyEmissionsKg Float
+  reductionPercentage      Float
+  targetYear               Int        @default(2026)
+  status                   String     @default("ACTIVE") // ACTIVE, COMPLETED, REPLACED, EXPIRED
+  createdAt                DateTime   @default(now())
+  updatedAt                DateTime   @updatedAt
+
+  @@index([userId])
+  @@index([userId, status])
+}
+
+model DiaryEntry {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date         DateTime
+  category     String
+  activityType String
+  subtype      String
+  quantity     Float
+  unit         String
+  emissionsKg  Float
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  @@index([userId, date])
+}
+
+model Insight {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title        String
+  description  String
+  category     String
+  severity     String   @default("INFO") // INFO, WARNING, SUCCESS
+  isAnomaly    Boolean  @default(false)
+  anomalyScore Float    @default(0.0)
+  createdAt    DateTime @default(now())
+
+  @@index([userId, createdAt])
+}

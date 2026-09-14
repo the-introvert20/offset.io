@@ -1,0 +1,21 @@
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Generated application and dependency output
+.next/
+node_modules/
+tsconfig.tsbuildinfo
+
+# Local databases
+*.db
+*.sqlite
+
+# Logs and OS/editor metadata
+logs/
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
