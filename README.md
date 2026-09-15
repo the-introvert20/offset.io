@@ -60,17 +60,22 @@ Most personal carbon footprint calculators rely on single-use, black-box questio
 
 | Feature | Description | Implementation Path |
 |---|---|---|
-| **Adaptive Onboarding** | Multi-step baseline survey converting lifestyle habits into persistent activities and atomic calculation audit records | [`app/onboarding/page.tsx`](file:///x:/offset.io/app/onboarding/page.tsx), [`app/api/onboarding/route.ts`](file:///x:/offset.io/app/api/onboarding/route.ts) |
-| **Calculation Transparency** | Real-time audit view showing exact mathematical formulas, factor sources, and confidence bands | [`app/calculate/page.tsx`](file:///x:/offset.io/app/calculate/page.tsx), [`lib/engine/calculator.ts`](file:///x:/offset.io/lib/engine/calculator.ts) |
+| **Adaptive Onboarding** | 5-step baseline survey (incl. India region, zero values, exact-number inputs) with replace-warning + two-step confirm for returning users; writes persistent activities and atomic calculation audit records | [`app/onboarding/page.tsx`](file:///x:/offset.io/app/onboarding/page.tsx), [`app/api/onboarding/route.ts`](file:///x:/offset.io/app/api/onboarding/route.ts) |
+| **Calculation Transparency** | Audit view showing input × factor = result, source links, region, methodology, and confidence ±% bands; distinct loading / signed-out / error / empty states | [`app/calculate/page.tsx`](file:///x:/offset.io/app/calculate/page.tsx), [`lib/engine/calculator.ts`](file:///x:/offset.io/lib/engine/calculator.ts) |
 | **Emission Factor System** | 23 seeded regional emission factors with in-memory caching and fallback cascades | [`lib/services/emission-factor.service.ts`](file:///x:/offset.io/lib/services/emission-factor.service.ts) |
-| **Uncertainty Engine** | Emissions-weighted confidence score (0–100%) and min–max variance bounds | [`lib/engine/uncertainty.ts`](file:///x:/offset.io/lib/engine/uncertainty.ts) |
-| **What-If Simulator** | Side-by-side hypothetical footprint re-calculation across 7 parameter sliders | [`app/simulator/page.tsx`](file:///x:/offset.io/app/simulator/page.tsx), [`app/api/simulator/route.ts`](file:///x:/offset.io/app/api/simulator/route.ts) |
-| **Scenario Manager** | Full CRUD workspace to save, edit, and compare customized lifestyle scenarios | [`app/scenarios/page.tsx`](file:///x:/offset.io/app/scenarios/page.tsx), [`app/api/scenarios/route.ts`](file:///x:/offset.io/app/api/scenarios/route.ts) |
-| **Greedy Optimizer** | Knapsack reduction plan builder prioritizing highest kg CO₂e reduced per dollar spent | [`lib/engine/optimizer.ts`](file:///x:/offset.io/lib/engine/optimizer.ts), [`app/api/optimize/route.ts`](file:///x:/offset.io/app/api/optimize/route.ts) |
-| **Carbon Goals & Budget** | Single active goal lifecycle tracking progress %, reduction targets, and annual budgets | [`lib/services/goal.service.ts`](file:///x:/offset.io/lib/services/goal.service.ts), [`app/api/goals/route.ts`](file:///x:/offset.io/app/api/goals/route.ts) |
-| **Daily Carbon Diary** | Daily activity log with automatic $z$-score statistical anomaly detection | [`app/api/diary/route.ts`](file:///x:/offset.io/app/api/diary/route.ts), [`lib/engine/anomaly.ts`](file:///x:/offset.io/lib/engine/anomaly.ts) |
-| **Dual-Mode Coach** | Q&A assistant featuring deterministic offline rules with optional Groq LLM integration | [`lib/engine/coach.ts`](file:///x:/offset.io/lib/engine/coach.ts), [`app/api/coach/route.ts`](file:///x:/offset.io/app/api/coach/route.ts) |
-| **Admin Factor Management** | Admin-restricted UI and API to add, inspect, and maintain global emission factor tables | [`app/admin/page.tsx`](file:///x:/offset.io/app/admin/page.tsx), [`app/api/admin/emission-factors/route.ts`](file:///x:/offset.io/app/api/admin/emission-factors/route.ts) |
+| **Uncertainty Engine** | Emissions-weighted confidence score (0–100%) and min–max variance bounds, shown in plain language with the likely range | [`lib/engine/uncertainty.ts`](file:///x:/offset.io/lib/engine/uncertainty.ts) |
+| **What-If Simulator** | Hypothetical footprint re-calculation across 7 controls using the canonical diet values; visible error states (never silent); "Save as scenario" transfers current settings and "Use in my plan" prefills the plan target | [`app/simulator/page.tsx`](file:///x:/offset.io/app/simulator/page.tsx), [`app/api/simulator/route.ts`](file:///x:/offset.io/app/api/simulator/route.ts), [`lib/simulator-snapshot.ts`](file:///x:/offset.io/lib/simulator-snapshot.ts) |
+| **Scenario Manager** | Full CRUD workspace to save, edit, and compare scenarios; costs in profile currency; vs-goal column; simulator-snapshot import; two-click delete confirms | [`app/scenarios/page.tsx`](file:///x:/offset.io/app/scenarios/page.tsx), [`app/api/scenarios/route.ts`](file:///x:/offset.io/app/api/scenarios/route.ts) |
+| **Greedy Optimizer** | Knapsack reduction plan builder prioritizing highest kg CO₂e reduced per money spent; profile-currency display; `?target=` prefill from simulator; unselected actions listed | [`lib/engine/optimizer.ts`](file:///x:/offset.io/lib/engine/optimizer.ts), [`app/api/optimize/route.ts`](file:///x:/offset.io/app/api/optimize/route.ts) |
+| **Carbon Goals & Budget** | Single active goal lifecycle tracking progress %, reduction targets, and annual budgets, with visible save/error feedback | [`lib/services/goal.service.ts`](file:///x:/offset.io/lib/services/goal.service.ts), [`app/api/goals/route.ts`](file:///x:/offset.io/app/api/goals/route.ts) |
+| **Daily Carbon Diary** | Daily log with dependent dropdowns (category → activity → type, unit auto-selected, only backend-priced combinations), live ≈kg estimate, and automatic $z$-score anomaly detection | [`app/diary/page.tsx`](file:///x:/offset.io/app/diary/page.tsx), [`app/api/diary/route.ts`](file:///x:/offset.io/app/api/diary/route.ts), [`lib/diary-options.ts`](file:///x:/offset.io/lib/diary-options.ts), [`lib/engine/anomaly.ts`](file:///x:/offset.io/lib/engine/anomaly.ts) |
+| **Dual-Mode Coach** | Q&A assistant with deterministic offline rules and optional Groq LLM integration; truthful greeting, visible error replies, `aria-live` conversation, preset questions mapped to real engine branches | [`lib/engine/coach.ts`](file:///x:/offset.io/lib/engine/coach.ts), [`app/api/coach/route.ts`](file:///x:/offset.io/app/api/coach/route.ts) |
+| **Admin Factor Management** | Admin-restricted UI and API to add (with region + confidence selectors), inspect, and maintain emission factor tables; duplicate/conflict feedback | [`app/admin/page.tsx`](file:///x:/offset.io/app/admin/page.tsx), [`app/api/admin/emission-factors/route.ts`](file:///x:/offset.io/app/api/admin/emission-factors/route.ts) |
+| **Profile Currency** | Single user currency (USD/EUR/GBP/INR) applied to every money figure via a central formatter — no hardcoded symbols | [`lib/format.ts`](file:///x:/offset.io/lib/format.ts), [`app/profile/page.tsx`](file:///x:/offset.io/app/profile/page.tsx) |
+| **Human UI & Accessibility** | Plain-language navigation (Overview, Try changes, My plan, Daily log, …); proper labels, focus rings, `prefers-reduced-motion`, dialog semantics + Escape, contrast-fixed palette, `clamp()` fluid type, 44px touch targets | [`components/Navbar.tsx`](file:///x:/offset.io/components/Navbar.tsx), [`components/Notice.tsx`](file:///x:/offset.io/components/Notice.tsx), [`components/ConfirmButton.tsx`](file:///x:/offset.io/components/ConfirmButton.tsx), [`app/globals.css`](file:///x:/offset.io/app/globals.css) |
+
+> [!NOTE]
+> The UI shows real data or honest empty/loading/error states — never placeholder metrics. Failed requests are surfaced visibly and are never mistaken for "no data".
 
 ---
 
@@ -243,20 +248,25 @@ offset.io/
 │   ├── reduction-plan/     # Optimization plan generator UI
 │   ├── scenarios/          # Save, edit, and compare scenario UI
 │   └── simulator/          # What-If interactive slider page
-├── components/             # Shared UI components (Navbar, Footer, ThemeToggle)
+├── components/             # Shared UI components (Navbar, Footer, ThemeToggle, Notice, ConfirmButton)
 ├── features/               # Typed front-end clients & React hooks
 │   ├── dashboard/          # Dashboard API hooks and types
 │   └── simulator/          # Simulator API hooks and types
 ├── lib/                    # Core Business Logic & Orchestration
 │   ├── auth/               # JWT token creation & session guard helpers
+│   ├── dashboard-state.ts  # Dashboard fetch-state classifier (loading/unauthorized/error/empty/ready)
+│   ├── diary-options.ts    # Diary catalog: only backend-priced combos + preview factors + legacy labels
+│   ├── diet-options.ts     # Canonical diet values shared by onboarding & simulator
 │   ├── db.ts               # Prisma Client singleton
 │   ├── engine/             # Side-effect-free pure mathematical domain engines
-│   └── services/           # DB orchestration, factor caching, and goal workflows
+│   ├── format.ts           # Central currency/number formatting (profile-driven, no hardcoded symbols)
+│   ├── services/           # DB orchestration, factor caching, and goal workflows
+│   └── simulator-snapshot.ts # Simulator → scenarios handoff (validated localStorage snapshot)
 ├── prisma/
 │   ├── schema.prisma       # 11 Relational Database Models
 │   ├── migrations/         # SQLite SQL migration files
 │   └── seed.ts             # Seed script (23 factors, 2 demo users, baseline activities)
-├── tests/                  # 15 Vitest unit & integration test suites
+├── tests/                  # 18 Vitest unit & integration test suites (67 tests)
 └── vitest.config.ts        # Vitest test configuration
 ```
 
@@ -336,7 +346,7 @@ All API endpoints return JSON. Mutating endpoints validate payloads with **Zod**
 | `GET` | `/api/goals` | Required | Fetch current active goal | Out: Active goal object |
 | `POST` | `/api/goals` | Required | Atomically replace active carbon goal | In: `{ targetAnnualEmissionsKg, targetYear }` |
 | `GET` | `/api/diary` | Required | Retrieve diary entries with $z$-score flags | Out: `{ entries, anomalyResult }` |
-| `POST` | `/api/diary` | Required | Log daily activity entry | In: `{ date, category, activityType, quantity }` |
+| `POST` | `/api/diary` | Required | Log daily activity entry (server resolves factor from category/activity/subtype/unit) | In: `{ date, category, activityType, subtype, quantity, unit, notes? }` |
 | `POST` | `/api/coach` | Required | Ask question to Carbon Coach | In: `{ query: string }` |
 | `GET` | `/api/admin/emission-factors` | Admin | List full emission factor table | Out: `{ factors: [] }` |
 | `POST` | `/api/admin/emission-factors` | Admin | Add new factor to database & clear cache | In: Emission factor schema |
@@ -380,7 +390,7 @@ erDiagram
 
 ## 🧪 Testing & Quality Assurance
 
-The codebase features **15 Vitest suites** covering unit domain logic and integration workflows.
+The codebase features **18 Vitest suites (67 tests)** covering unit domain logic, integration workflows, and the shared UI-support libraries.
 
 ```bash
 # Run unit and integration tests once
@@ -395,16 +405,20 @@ npm run test:watch
 2. [`tests/uncertainty.test.ts`](file:///x:/offset.io/tests/uncertainty.test.ts) — Confidence score weighting & min/max bounds
 3. [`tests/optimizer.test.ts`](file:///x:/offset.io/tests/optimizer.test.ts) — Greedy knapsack budget optimization
 4. [`tests/anomaly.test.ts`](file:///x:/offset.io/tests/anomaly.test.ts) — Z-score spike detector thresholds
-5. [`tests/coach.test.ts`](file:///x:/offset.io/tests/coach.test.ts) — Local deterministic Q&A logic & Groq fallback
-6. [`tests/emission-factor.service.test.ts`](file:///x:/offset.io/tests/emission-factor.service.test.ts) — Factor lookup cascade & caching
-7. [`tests/footprint.service.test.ts`](file:///x:/offset.io/tests/footprint.service.test.ts) — DB footprint aggregation
-8. [`tests/scenario-crud.test.ts`](file:///x:/offset.io/tests/scenario-crud.test.ts) — Scenario persistence & user isolation
-9. [`tests/diary-crud.test.ts`](file:///x:/offset.io/tests/diary-crud.test.ts) — Diary CRUD & anomaly evaluation
-10. [`tests/goal-lifecycle.test.ts`](file:///x:/offset.io/tests/goal-lifecycle.test.ts) — Atomic active goal replacement
-11. [`tests/onboarding-transaction.test.ts`](file:///x:/offset.io/tests/onboarding-transaction.test.ts) — Questionnaire atomic transaction
-12. [`tests/dashboard-idempotency.test.ts`](file:///x:/offset.io/tests/dashboard-idempotency.test.ts) — Read-only dashboard safety
-13. [`tests/simulator.test.ts`](file:///x:/offset.io/tests/simulator.test.ts) — What-If parameter recalculation
-14. [`tests/middleware.test.ts`](file:///x:/offset.io/tests/middleware.test.ts) — Route protection & auth redirects
+5. [`tests/anomaly-insights.test.ts`](file:///x:/offset.io/tests/anomaly-insights.test.ts) — Anomaly insight generation
+6. [`tests/coach.test.ts`](file:///x:/offset.io/tests/coach.test.ts) — Local deterministic Q&A logic & Groq fallback
+7. [`tests/emission-factor.service.test.ts`](file:///x:/offset.io/tests/emission-factor.service.test.ts) — Factor lookup cascade & caching
+8. [`tests/footprint.service.test.ts`](file:///x:/offset.io/tests/footprint.service.test.ts) — DB footprint aggregation
+9. [`tests/scenario-crud.test.ts`](file:///x:/offset.io/tests/scenario-crud.test.ts) — Scenario persistence & user isolation
+10. [`tests/diary-crud.test.ts`](file:///x:/offset.io/tests/diary-crud.test.ts) — Diary CRUD & anomaly evaluation
+11. [`tests/goal-lifecycle.test.ts`](file:///x:/offset.io/tests/goal-lifecycle.test.ts) — Atomic active goal replacement
+12. [`tests/onboarding-transaction.test.ts`](file:///x:/offset.io/tests/onboarding-transaction.test.ts) — Questionnaire atomic transaction
+13. [`tests/dashboard-idempotency.test.ts`](file:///x:/offset.io/tests/dashboard-idempotency.test.ts) — Read-only dashboard safety
+14. [`tests/simulator.test.ts`](file:///x:/offset.io/tests/simulator.test.ts) — What-If parameter recalculation
+15. [`tests/middleware.test.ts`](file:///x:/offset.io/tests/middleware.test.ts) — Route protection & auth redirects
+16. [`tests/format.test.ts`](file:///x:/offset.io/tests/format.test.ts) — Profile-currency formatting & signed monthly deltas
+17. [`tests/diary-options.test.ts`](file:///x:/offset.io/tests/diary-options.test.ts) — Diary catalog validity, canonical diet values, legacy labels
+18. [`tests/ux-state.test.ts`](file:///x:/offset.io/tests/ux-state.test.ts) — Dashboard state classification & simulator-snapshot validation/mapping
 
 ---
 
@@ -425,8 +439,12 @@ npm run test:watch
 1. **SQLite Storage**: Uses single-file SQLite database for local execution simplicity.
 2. **Single Migration File**: Baseline schema managed via initial migration (`0001_initial`).
 3. **Admin Factor Operations**: Factor management currently supports List + Create endpoints (no Edit/Delete API).
-4. **Destructive Onboarding**: Re-running onboarding replaces baseline activity records rather than merging.
-5. **No E2E Browser Tests**: Testing pipeline utilizes Vitest node integration testing (no Cypress/Playwright).
+4. **Onboarding Replaces Baseline**: Re-running onboarding still replaces (rather than merges) activity records — it now warns and requires a two-step confirm first. Scenarios, goals, and diary entries are preserved.
+5. **Diary Resolves GLOBAL Factors Only**: The diary API looks factors up without a region, so only `GLOBAL`-region rows are loggable (e.g. `grid_us` falls back to a display label but cannot be logged). Regional grids apply to baseline activities and the simulator.
+6. **Simulator Excludes Consumption**: Clothing/electronics factors exist and are loggable in the diary, but onboarding and the simulator never create `CONSUMPTION` activities and no recommendation rule targets them.
+7. **Optimizer Explanation Currency**: The optimizer engine's explanation sentence uses `$` while all UI money figures use the profile currency (`lib/format.ts`).
+8. **Secure Cookies Need HTTPS**: The session cookie is `Secure` in production, so authenticated API testing over plain `http://localhost` requires `NODE_ENV=development` (the dev server default).
+9. **No E2E Browser Tests**: Testing pipeline utilizes Vitest node integration testing (no Cypress/Playwright).
 
 ---
 
@@ -439,9 +457,12 @@ npm run test:watch
 - [x] Constrained Greedy Knapsack Reduction Plan Optimizer
 - [x] Daily Carbon Diary with Rolling Z-Score Anomaly Detection
 - [x] Dual-Mode Carbon Coach (Local Offline + Groq LLM integration)
+- [x] Trust & Usability Pass: honest empty/loading/error states (no placeholder metrics), plain-language navigation, diary dropdowns with live estimates, profile-driven currency everywhere, simulator → scenario/plan handoffs, delete confirmations, visible mutation feedback, accessibility baseline (labels, focus rings, reduced motion, dialog semantics, contrast, fluid type)
 - [ ] Admin Factor Edit & Deactivation Capabilities
 - [ ] End-to-End Cypress / Playwright Test Automation
 - [ ] Multi-tenant PostgreSQL Database Driver Support
+- [ ] Persisted reduction plans linked to goals with re-evaluation
+- [ ] Simulator cost modeling and CONSUMPTION coverage
 
 ---
 
