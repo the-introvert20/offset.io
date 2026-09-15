@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Notice from '@/components/Notice';
 import { ANOMALY_Z_SCORE_THRESHOLD } from '@/lib/engine/anomaly';
 
 interface Insight {
@@ -18,16 +19,24 @@ interface Insight {
 export default function InsightsPage() {
   const [insights, setInsights] = useState<Insight[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [filter, setFilter] = useState<'all' | 'anomaly' | 'insight'>('all');
 
   useEffect(() => {
     fetch('/api/dashboard')
-      .then((res) => res.json())
+      .then((res) => (res.ok ? res.json() : null))
       .then((d) => {
-        if (d.insights) setInsights(d.insights);
+        if (!d) {
+          setLoadError(true);
+        } else if (d.insights) {
+          setInsights(d.insights);
+        }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setLoadError(true);
+        setLoading(false);
+      });
   }, []);
 
   const filtered = insights.filter((ins) => {
@@ -42,9 +51,9 @@ export default function InsightsPage() {
   if (loading) {
     return (
       <div className="w-full min-h-[60vh] flex flex-col items-center justify-center p-space-xl text-on-surface">
-        <div className="w-12 h-12 border-2 border-on-surface border-t-primary animate-spin mb-space-md" />
+        <div className="w-12 h-12 border-2 border-on-surface border-t-primary animate-spin mb-space-md" aria-hidden="true" />
         <span className="font-label-caps-md uppercase tracking-wider font-bold">
-          SCANNING ANOMALY DETECTION ENGINE...
+          Checking your recent log…
         </span>
       </div>
     );
@@ -55,21 +64,21 @@ export default function InsightsPage() {
       {/* Ticker Header */}
       <section className="w-full bg-surface-container-low border-b border-on-surface flex flex-col md:flex-row items-stretch justify-between text-on-surface select-none">
         <div className="px-space-md py-space-xs border-b md:border-b-0 md:border-r border-on-surface flex items-center space-x-space-sm bg-surface-container-lowest">
-          <span className="w-2.5 h-2.5 bg-primary animate-pulse"></span>
+          <span className="w-2.5 h-2.5 bg-primary animate-pulse" aria-hidden="true"></span>
           <span className="font-label-caps-md text-label-caps-md uppercase tracking-wider text-on-surface font-bold">
-            STATISTICAL ANOMALY FEED // ISO 14064-3
+            Your insights
           </span>
         </div>
         <div className="px-space-md py-space-xs border-b md:border-b-0 md:border-r border-on-surface flex items-center flex-1 justify-center bg-surface-container-lowest">
           <span className="font-label-caps-md text-label-caps-md uppercase tracking-wide text-on-surface">
-            {anomalyCount} ANOMALY SIGNALS • {insightCount} TREND INSIGHTS ACTIVE
+            {anomalyCount} unusual {anomalyCount === 1 ? 'day' : 'days'} • {insightCount} notes
           </span>
         </div>
         <div className="px-space-md py-space-xs flex items-center justify-between md:justify-end space-x-space-md bg-secondary-fixed text-on-secondary-fixed">
           <span className="font-label-caps-sm text-label-caps-sm uppercase tracking-widest font-bold">
-            AUDIT: ROLLING 30-DAY
+            From your last 60 log entries
           </span>
-          <span className="material-symbols-outlined text-[16px]">analytics</span>
+          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">analytics</span>
         </div>
       </section>
 
@@ -80,36 +89,43 @@ export default function InsightsPage() {
         <div className="border-b border-on-surface pb-space-sm flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <span className="font-label-caps-sm uppercase text-primary font-bold tracking-widest">
-              PATTERN RECOGNITION LAYER
+              Patterns in your log
             </span>
             <h1 className="font-headline text-headline-xl uppercase font-bold tracking-tight mt-1">
-              INSIGHTS & ANOMALY DETECTION
+              Insights
             </h1>
             <p className="font-body-md text-on-surface-variant max-w-3xl mt-1">
-              Continuous statistical monitoring of your carbon telemetry. Anomalies represent deviations exceeding {ANOMALY_Z_SCORE_THRESHOLD}× standard deviation from your rolling mean.
+              We compare each logged day against your usual. Anything far above normal (over {ANOMALY_Z_SCORE_THRESHOLD}× the typical day-to-day variation) gets flagged so you can see what caused it.
             </p>
           </div>
           <div className="flex items-center space-x-2 font-label-caps-sm uppercase font-bold">
             <Link
               href="/dashboard"
-              className="px-space-md py-space-xs bg-surface-container border border-on-surface text-on-surface hover:bg-on-surface hover:text-surface-container-lowest transition-none"
+              className="min-h-[44px] inline-flex items-center px-space-md py-space-xs bg-surface-container border border-on-surface text-on-surface hover:bg-on-surface hover:text-surface-container-lowest transition-none"
             >
-              ← OVERVIEW
+              ← Back to overview
             </Link>
           </div>
         </div>
 
+        {loadError && (
+          <Notice tone="error">
+            We couldn&apos;t load your insights. Check your connection and refresh — your data is safe.
+          </Notice>
+        )}
+
         {/* Filter Tabs */}
-        <div className="flex items-center border border-on-surface w-fit">
+        <div className="flex items-center border border-on-surface w-fit" role="group" aria-label="Filter insights">
           {[
-            { key: 'all' as const, label: `ALL (${insights.length})` },
-            { key: 'anomaly' as const, label: `ANOMALIES (${anomalyCount})` },
-            { key: 'insight' as const, label: `INSIGHTS (${insightCount})` },
+            { key: 'all' as const, label: `All (${insights.length})` },
+            { key: 'anomaly' as const, label: `Unusual days (${anomalyCount})` },
+            { key: 'insight' as const, label: `Notes (${insightCount})` },
           ].map((tab) => (
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key)}
-              className={`px-space-md py-space-xs font-label-caps-md text-label-caps-md uppercase font-bold border-r border-on-surface last:border-r-0 transition-none ${
+              aria-pressed={filter === tab.key}
+              className={`min-h-[44px] px-space-md py-space-xs font-label-caps-md text-label-caps-md uppercase font-bold border-r border-on-surface last:border-r-0 transition-none ${
                 filter === tab.key
                   ? 'bg-on-surface text-surface-container-lowest'
                   : 'bg-surface-container-lowest text-on-surface hover:bg-surface-container-high'
@@ -123,12 +139,14 @@ export default function InsightsPage() {
         {/* Insights Feed */}
         {filtered.length === 0 ? (
           <div className="border border-on-surface p-space-xl bg-surface-container-low text-center">
-            <span className="material-symbols-outlined text-[40px] text-on-surface-variant block mb-space-sm">check_circle</span>
+            <span className="material-symbols-outlined text-[40px] text-on-surface-variant block mb-space-sm" aria-hidden="true">check_circle</span>
             <span className="font-label-caps-md uppercase font-bold text-on-surface-variant block">
-              NO ACTIVE SIGNALS IN THIS CATEGORY
+              {loadError ? 'Nothing to show right now' : 'All quiet — nothing unusual'}
             </span>
             <p className="font-body-md text-on-surface-variant mt-2">
-              Continue logging activity entries to generate statistical patterns.
+              {loadError
+                ? 'Refresh the page to try again.'
+                : 'Keep logging daily activities and new notes will appear here as patterns emerge.'}
             </p>
           </div>
         ) : (
@@ -146,8 +164,8 @@ export default function InsightsPage() {
                     <div className="font-display text-headline-lg font-bold text-on-surface">
                       {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}
                     </div>
-                    <div className={`font-label-caps-sm text-label-caps-sm uppercase font-bold mt-0.5 ${ins.isAnomaly ? 'text-coral-accent' : 'text-primary'}`}>
-                      {ins.isAnomaly ? 'ALERT' : 'SIGNAL'}
+                    <div className={`font-label-caps-sm text-label-caps-sm uppercase font-bold mt-0.5 ${ins.isAnomaly ? 'text-error' : 'text-primary'}`}>
+                      {ins.isAnomaly ? 'Unusual' : 'Note'}
                     </div>
                   </div>
                 </div>
@@ -160,8 +178,8 @@ export default function InsightsPage() {
                         {ins.title}
                       </span>
                       {ins.isAnomaly && (
-                        <span className="px-space-xs py-0.5 bg-coral-accent text-white font-label-caps-sm text-label-caps-sm uppercase font-bold">
-                          ANOMALY DETECTED
+                        <span className="px-space-xs py-0.5 bg-coral-accent text-on-surface font-label-caps-sm text-label-caps-sm uppercase font-bold">
+                          Unusual day
                         </span>
                       )}
                     </div>
@@ -171,8 +189,8 @@ export default function InsightsPage() {
                   </div>
 
                   {ins.isAnomaly && ins.anomalyScore > 0 && (
-                    <div className="p-space-sm bg-coral-accent/10 border border-coral-accent font-label-caps-sm text-label-caps-sm uppercase font-bold text-coral-accent">
-                      STATISTICAL DEVIATION: {ins.anomalyScore.toFixed(2)}× STANDARD DEVIATION • THRESHOLD: {ANOMALY_Z_SCORE_THRESHOLD.toFixed(1)}×
+                    <div className="p-space-sm bg-surface-container border border-on-surface font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface">
+                      {ins.anomalyScore.toFixed(2)}× above your usual variation (we flag anything over {ANOMALY_Z_SCORE_THRESHOLD.toFixed(1)}×)
                     </div>
                   )}
                 </div>
@@ -182,10 +200,10 @@ export default function InsightsPage() {
                   <span className="px-space-xs py-0.5 border border-on-surface bg-surface-container font-label-caps-sm text-label-caps-sm uppercase font-bold">
                     {ins.category}
                   </span>
-                  <div className="text-right mt-auto">
-                    <div className={`font-label-caps-sm uppercase font-bold ${ins.severity === 'HIGH' ? 'text-coral-accent' : ins.severity === 'MEDIUM' ? 'text-yellow-accent' : 'text-primary'}`}>
-                      SEVERITY: {ins.severity}
-                    </div>
+                    <div className="text-right mt-auto">
+                      <div className="font-label-caps-sm uppercase font-bold text-on-surface">
+                        {ins.severity === 'WARNING' ? 'Worth a look' : ins.severity === 'SUCCESS' ? 'On track' : 'Info'}
+                      </div>
                     <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold mt-0.5">
                       {new Date(ins.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' }).toUpperCase()}
                     </div>
@@ -198,9 +216,9 @@ export default function InsightsPage() {
 
         {/* Footer CTA Row */}
         <div className="border-t border-on-surface pt-space-md flex flex-col sm:flex-row items-center justify-between gap-space-sm font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant">
-          <span>DATA SOURCE: PERSONAL CARBON LEDGER • Z-SCORE THRESHOLD: {ANOMALY_Z_SCORE_THRESHOLD.toFixed(1)}</span>
-          <Link href="/diary" className="text-primary hover:underline">
-            LOG ACTIVITY TO GENERATE MORE SIGNALS →
+          <span>Based on your daily log</span>
+          <Link href="/diary" className="min-h-[44px] inline-flex items-center text-primary hover:underline">
+            Log today&apos;s activities →
           </Link>
         </div>
       </div>

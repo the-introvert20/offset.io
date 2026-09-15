@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Notice from '@/components/Notice';
+import { formatCurrency } from '@/lib/format';
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<{
@@ -16,6 +18,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const fetchProfile = () => {
     fetch('/api/profile')
@@ -39,6 +42,7 @@ export default function ProfilePage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    setSaveError(null);
     try {
       const res = await fetch('/api/profile', {
         method: 'PUT',
@@ -52,10 +56,12 @@ export default function ProfilePage() {
       if (res.ok) {
         fetchProfile();
         setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+        setTimeout(() => setSaved(false), 2500);
+      } else {
+        setSaveError('We couldn’t save those settings. Try again.');
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
+      setSaveError('Connection problem. Your settings are unchanged — try again in a moment.');
     } finally {
       setSaving(false);
     }
@@ -64,20 +70,21 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="w-full min-h-[60vh] flex flex-col items-center justify-center p-space-xl text-on-surface">
-        <div className="w-12 h-12 border-2 border-on-surface border-t-primary animate-spin mb-space-md" />
+        <div className="w-12 h-12 border-2 border-on-surface border-t-primary animate-spin mb-space-md" aria-hidden="true" />
         <span className="font-label-caps-md uppercase tracking-wider font-bold">
-          LOADING USER PROFILE...
+          Loading your profile…
         </span>
       </div>
     );
   }
 
+  // Grid factors mirror the seeded emission factors (kg CO₂e per kWh).
   const regions = [
-    { value: 'IN', label: 'India (CEA Grid)', factor: '0.82 kg CO₂e/kWh' },
-    { value: 'US', label: 'United States (EPA eGRID)', factor: '0.39 kg CO₂e/kWh' },
-    { value: 'EU', label: 'European Union (EEA Grid)', factor: '0.27 kg CO₂e/kWh' },
-    { value: 'UK', label: 'United Kingdom (DEFRA)', factor: '0.21 kg CO₂e/kWh' },
-    { value: 'GLOBAL', label: 'Global Default Average', factor: '0.50 kg CO₂e/kWh' },
+    { value: 'IN', label: 'India', factor: '0.71 kg CO₂e/kWh' },
+    { value: 'US', label: 'United States', factor: '0.39 kg CO₂e/kWh' },
+    { value: 'EU', label: 'European Union', factor: '0.23 kg CO₂e/kWh' },
+    { value: 'UK', label: 'United Kingdom', factor: '0.21 kg CO₂e/kWh' },
+    { value: 'GLOBAL', label: 'Somewhere else (global average)', factor: '0.45 kg CO₂e/kWh' },
   ];
 
   const currencies = [
@@ -97,21 +104,21 @@ export default function ProfilePage() {
       {/* Ticker Header */}
       <section className="w-full bg-surface-container-low border-b border-on-surface flex flex-col md:flex-row items-stretch justify-between text-on-surface select-none">
         <div className="px-space-md py-space-xs border-b md:border-b-0 md:border-r border-on-surface flex items-center space-x-space-sm bg-surface-container-lowest">
-          <span className="w-2.5 h-2.5 bg-primary animate-pulse"></span>
+          <span className="w-2.5 h-2.5 bg-primary animate-pulse" aria-hidden="true"></span>
           <span className="font-label-caps-md text-label-caps-md uppercase tracking-wider text-on-surface font-bold">
-            USER PROFILE // GRID SETTINGS
+            Profile &amp; settings
           </span>
         </div>
         <div className="px-space-md py-space-xs border-b md:border-b-0 md:border-r border-on-surface flex items-center flex-1 justify-center bg-surface-container-lowest">
           <span className="font-label-caps-md text-label-caps-md uppercase tracking-wide text-on-surface">
-            {userName.toUpperCase()} • {userRole} • REGION: {region}
+            {userName} • {region} • {currency}
           </span>
         </div>
         <div className="px-space-md py-space-xs flex items-center justify-between md:justify-end space-x-space-md bg-secondary-fixed text-on-secondary-fixed">
           <span className="font-label-caps-sm text-label-caps-sm uppercase tracking-widest font-bold">
-            SESSION: ACTIVE
+            Signed in
           </span>
-          <span className="material-symbols-outlined text-[16px]">manage_accounts</span>
+          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">manage_accounts</span>
         </div>
       </section>
 
@@ -122,20 +129,20 @@ export default function ProfilePage() {
         <div className="border-b border-on-surface pb-space-sm flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <span className="font-label-caps-sm uppercase text-primary font-bold tracking-widest">
-              ACCOUNT PARAMETERS
+              Your details
             </span>
             <h1 className="font-headline text-headline-xl uppercase font-bold tracking-tight mt-1">
-              PROFILE & REGIONAL SETTINGS
+              Profile &amp; settings
             </h1>
             <p className="font-body-md text-on-surface-variant max-w-3xl mt-1">
-              Configure region-specific grid emission factors, currency preferences, and monthly action budget. These parameters propagate across all calculation engines.
+              Your region chooses the electricity factor for your estimates, and your currency is used for every cost shown across the app.
             </p>
           </div>
           <Link
             href="/dashboard"
-            className="px-space-md py-space-xs bg-surface-container border border-on-surface font-label-caps-md uppercase font-bold text-on-surface hover:bg-on-surface hover:text-surface-container-lowest transition-none whitespace-nowrap"
+            className="min-h-[44px] inline-flex items-center px-space-md py-space-xs bg-surface-container border border-on-surface font-label-caps-md uppercase font-bold text-on-surface hover:bg-on-surface hover:text-surface-container-lowest transition-none whitespace-nowrap"
           >
-            ← OVERVIEW
+            ← Back to overview
           </Link>
         </div>
 
@@ -146,7 +153,7 @@ export default function ProfilePage() {
             <div>
               <div className="border-b border-on-surface pb-space-sm mb-space-md">
                 <span className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface">
-                  LEDGER ACCOUNT
+                  Your account
                 </span>
               </div>
 
@@ -169,20 +176,16 @@ export default function ProfilePage() {
 
             <div className="border-t border-on-surface pt-space-md space-y-space-xs font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant">
               <div className="flex justify-between">
-                <span>FRAMEWORK</span>
-                <span className="text-on-surface">ISO 14064-1</span>
-              </div>
-              <div className="flex justify-between">
-                <span>GRID REGION</span>
+                <span>Region</span>
                 <span className="text-on-surface">{region}</span>
               </div>
               <div className="flex justify-between">
-                <span>CURRENCY</span>
+                <span>Currency</span>
                 <span className="text-on-surface">{currency}</span>
               </div>
               <div className="flex justify-between">
-                <span>ACTION BUDGET</span>
-                <span className="text-primary">{currency === 'INR' ? '₹' : '$'}{budget}/mo</span>
+                <span>Monthly budget</span>
+                <span className="text-primary">{formatCurrency(budget, currency)}/mo</span>
               </div>
             </div>
           </div>
@@ -191,15 +194,16 @@ export default function ProfilePage() {
           <div className="lg:col-span-8 p-space-lg bg-surface-container-lowest">
             <div className="border-b border-on-surface pb-space-sm mb-space-md">
               <span className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface">
-                UPDATE PARAMETERS
+                Change settings
               </span>
             </div>
 
             <form onSubmit={handleSave} className="space-y-space-md">
+              {saveError && <Notice tone="error">{saveError}</Notice>}
               {/* Region Selection */}
               <div>
                 <div className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant mb-space-xs">
-                  01 // GRID EMISSION FACTOR REGION
+                  Where you live — sets your electricity factor
                 </div>
                 <div className="border border-on-surface">
                   {regions.map((r, i) => (
@@ -207,7 +211,8 @@ export default function ProfilePage() {
                       key={r.value}
                       type="button"
                       onClick={() => setRegion(r.value)}
-                      className={`w-full p-space-sm text-left flex items-center justify-between border-b border-on-surface last:border-b-0 transition-none ${
+                      aria-pressed={region === r.value}
+                      className={`min-h-[44px] w-full p-space-sm text-left flex items-center justify-between border-b border-on-surface last:border-b-0 transition-none ${
                         region === r.value
                           ? 'bg-on-surface text-surface-container-lowest'
                           : 'bg-surface-container-lowest text-on-surface hover:bg-surface-container-high'
@@ -227,16 +232,17 @@ export default function ProfilePage() {
               {/* Currency & Budget */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
                 <div>
-                  <div className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant mb-space-xs">
-                    02 // CURRENCY
+                  <div className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant mb-space-xs" id="profile-currency-label">
+                    Currency for all costs
                   </div>
-                  <div className="border border-on-surface grid grid-cols-2">
+                  <div className="border border-on-surface grid grid-cols-2" role="group" aria-labelledby="profile-currency-label">
                     {currencies.map((c) => (
                       <button
                         key={c.value}
                         type="button"
                         onClick={() => setCurrency(c.value)}
-                        className={`p-space-sm font-label-caps-sm text-label-caps-sm uppercase font-bold border-r border-b border-on-surface last:border-r-0 transition-none ${
+                        aria-pressed={currency === c.value}
+                        className={`min-h-[44px] p-space-sm font-label-caps-sm text-label-caps-sm uppercase font-bold border-r border-b border-on-surface last:border-r-0 transition-none ${
                           currency === c.value
                             ? 'bg-on-surface text-surface-container-lowest'
                             : 'bg-surface-container-lowest text-on-surface hover:bg-surface-container-high'
@@ -250,20 +256,22 @@ export default function ProfilePage() {
 
                 <div>
                   <div className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant mb-space-xs">
-                    03 // MONTHLY ACTION BUDGET
+                    Monthly budget for green actions
                   </div>
                   <div className="border border-on-surface">
                     <div className="border-b border-on-surface p-space-sm bg-surface-container-low flex items-center justify-between">
-                      <span className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant">LIMIT</span>
-                      <span className="font-headline text-headline-sm font-bold text-primary">{currency === 'INR' ? '₹' : '$'}{budget}</span>
+                      <span className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant">Limit</span>
+                      <span className="font-headline text-headline-sm font-bold text-primary">{formatCurrency(budget, currency)}</span>
                     </div>
                     <input
+                      id="profile-budget"
                       type="number"
                       value={budget}
                       onChange={(e) => setBudget(Number(e.target.value))}
                       min={0}
                       step={100}
-                      className="w-full px-space-md py-space-sm bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none focus:bg-surface-container-low"
+                      aria-label="Monthly budget in your currency"
+                      className="min-h-[44px] w-full px-space-md py-space-sm bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none focus:bg-surface-container-low"
                     />
                   </div>
                 </div>
@@ -272,17 +280,17 @@ export default function ProfilePage() {
               <button
                 type="submit"
                 disabled={saving}
-                className={`w-full py-space-sm px-space-lg font-label-caps-md text-label-caps-md uppercase font-bold border border-on-surface flex items-center justify-center gap-space-xs transition-none ${
+                className={`min-h-[44px] w-full py-space-sm px-space-lg font-label-caps-md text-label-caps-md uppercase font-bold border border-on-surface flex items-center justify-center gap-space-xs transition-none ${
                   saved
                     ? 'bg-primary text-on-primary'
                     : 'bg-on-surface text-surface-container-lowest hover:bg-primary'
                 } disabled:opacity-50`}
               >
-                <span className="material-symbols-outlined text-[18px]">
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                   {saved ? 'check' : 'save'}
                 </span>
                 <span>
-                  {saving ? 'SAVING...' : saved ? 'PROFILE SAVED' : 'SAVE PROFILE PARAMETERS →'}
+                  {saving ? 'Saving…' : saved ? 'Settings saved' : 'Save changes →'}
                 </span>
               </button>
             </form>

@@ -30,18 +30,19 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { href: '/dashboard', label: 'OVERVIEW' },
-    { href: '/simulator', label: 'WHAT IF?' },
-    { href: '/scenarios', label: 'SCENARIOS' },
-    { href: '/reduction-plan', label: 'PLAN' },
-    { href: '/diary', label: 'DIARY' },
-    { href: '/insights', label: 'INSIGHTS' },
-    { href: '/coach', label: 'COACH' },
-    { href: '/goals', label: 'GOALS' },
+    { href: '/dashboard', label: 'Overview' },
+    { href: '/calculate', label: "How it's calculated" },
+    { href: '/simulator', label: 'Try changes' },
+    { href: '/scenarios', label: 'Scenarios' },
+    { href: '/reduction-plan', label: 'My plan' },
+    { href: '/diary', label: 'Daily log' },
+    { href: '/insights', label: 'Insights' },
+    { href: '/coach', label: 'Coach' },
+    { href: '/goals', label: 'Goals' },
   ];
 
   if (user?.role === 'ADMIN') {
-    navLinks.push({ href: '/admin', label: 'ADMIN' });
+    navLinks.push({ href: '/admin', label: 'Factors (admin)' });
   }
 
   return (
@@ -84,7 +85,7 @@ export default function Navbar() {
             className="p-2 text-on-surface hover:bg-surface-container flex items-center justify-center border border-on-surface"
             aria-label="Toggle Menu"
           >
-            <span className="material-symbols-outlined text-[20px]">
+            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
               {mobileMenuOpen ? 'close' : 'menu'}
             </span>
           </button>
@@ -92,27 +93,12 @@ export default function Navbar() {
 
         {/* Right Utility Actions */}
         <div className="hidden sm:flex items-stretch shrink-0">
-          <Link
-            href="/insights"
-            className="flex items-center justify-center px-space-md border-l border-on-surface text-on-surface hover:bg-surface-container-high transition-none"
-            title="System Parameters"
-          >
-            <span className="material-symbols-outlined text-[20px]">tune</span>
-          </Link>
-          <Link
-            href="/simulator"
-            className="flex items-center justify-center px-space-md border-l border-on-surface text-on-surface hover:bg-surface-container-high transition-none"
-            title="Search & Simulate"
-          >
-            <span className="material-symbols-outlined text-[20px]">search</span>
-          </Link>
-          
           <div className="flex items-center px-space-md border-l border-on-surface bg-surface-container-lowest">
             <Link
               href="/diary"
               className="px-space-md py-space-xs bg-on-surface text-surface-container-lowest font-label-caps-md text-label-caps-md uppercase border border-on-surface hover:bg-primary hover:text-on-primary transition-none font-bold whitespace-nowrap"
             >
-              LOG ACTIVITY
+              Log activity
             </Link>
           </div>
 
@@ -129,18 +115,18 @@ export default function Navbar() {
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="text-[11px] uppercase font-label font-bold text-on-surface-variant hover:text-error ml-1"
-                  title="Sign Out"
+                  className="min-h-[44px] text-[11px] uppercase font-label font-bold text-on-surface-variant hover:text-error ml-1"
+                  title="Sign out"
                 >
-                  EXIT
+                  Sign out
                 </button>
               </div>
             ) : (
               <Link
                 href="/auth/login"
-                className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-primary hover:underline whitespace-nowrap"
+                className="min-h-[44px] inline-flex items-center font-label-caps-sm text-label-caps-sm uppercase font-bold text-primary hover:underline whitespace-nowrap"
               >
-                SIGN IN
+                Sign in
               </Link>
             )}
           </div>
@@ -163,7 +149,7 @@ export default function Navbar() {
                   }`}
                 >
                   <span>{link.label}</span>
-                  <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                  <span className="material-symbols-outlined text-[16px]" aria-hidden="true">arrow_forward</span>
                 </Link>
               );
             })}
@@ -173,33 +159,33 @@ export default function Navbar() {
             <Link
               href="/diary"
               onClick={() => setMobileMenuOpen(false)}
-              className="px-space-md py-space-xs bg-on-surface text-surface-container-lowest font-label-caps-md uppercase font-bold"
+              className="min-h-[44px] inline-flex items-center px-space-md py-space-xs bg-on-surface text-surface-container-lowest font-label-caps-md uppercase font-bold"
             >
-              LOG ACTIVITY
+              Log activity
             </Link>
             {user ? (
               <div className="flex items-center space-x-3">
                 <Link
                   href="/profile"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="font-label-caps-sm uppercase font-bold text-on-surface underline"
+                  className="min-h-[44px] inline-flex items-center font-label-caps-sm uppercase font-bold text-on-surface underline"
                 >
                   {user.name}
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="font-label-caps-sm uppercase font-bold text-error"
+                  className="min-h-[44px] inline-flex items-center font-label-caps-sm uppercase font-bold text-error"
                 >
-                  LOGOUT
+                  Sign out
                 </button>
               </div>
             ) : (
               <Link
                 href="/auth/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="font-label-caps-md uppercase font-bold text-primary"
+                className="min-h-[44px] inline-flex items-center font-label-caps-md uppercase font-bold text-primary"
               >
-                SIGN IN →
+                Sign in →
               </Link>
             )}
           </div>

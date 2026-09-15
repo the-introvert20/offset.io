@@ -32,7 +32,7 @@ export default function LoginPage() {
 
       router.push('/dashboard');
     } catch {
-      setError('SYSTEM ERROR: UNABLE TO REACH AUTHENTICATION SERVER');
+      setError('Connection problem — please check your connection and try again.');
       setLoading(false);
     }
   };
@@ -48,25 +48,25 @@ export default function LoginPage() {
         {/* Auth Panel Header */}
         <div className="border-b border-on-surface bg-surface-container-low flex items-stretch">
           <div className="p-space-md border-r border-on-surface flex items-center">
-            <span className="w-8 h-8 bg-primary flex items-center justify-center text-on-primary font-bold text-sm">O</span>
+            <span className="w-8 h-8 bg-primary flex items-center justify-center text-on-primary font-bold text-sm" aria-hidden="true">O</span>
           </div>
           <div className="p-space-md flex-1">
             <div className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface">
-              offset.io // CARBON INTELLIGENCE PLATFORM
+              Welcome back
             </div>
             <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold mt-0.5">
-              AUTHENTICATED SESSION REQUIRED
+              Sign in to see your footprint
             </div>
           </div>
           <div className="p-space-md border-l border-on-surface bg-secondary-fixed flex items-center">
-            <span className="material-symbols-outlined text-on-secondary-fixed text-[20px]">lock</span>
+            <span className="material-symbols-outlined text-on-secondary-fixed text-[20px]" aria-hidden="true">lock</span>
           </div>
         </div>
 
         {/* Quick Demo Credentials */}
         <div className="border-b border-on-surface bg-surface-container p-space-md">
           <div className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant mb-space-sm">
-            QUICK DEMO ACCESS
+            Try the demo (fills the form for you)
           </div>
           <div className="grid grid-cols-2 gap-1">
             <button
@@ -90,16 +90,10 @@ export default function LoginPage() {
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="p-space-lg space-y-space-md bg-surface-container-lowest">
-          <div>
-            <span className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface-variant block mb-space-sm">
-              AUTHENTICATION CREDENTIALS
-            </span>
-          </div>
-
           {error && (
-            <div className="border border-coral-accent bg-coral-accent/10 p-space-sm flex items-center gap-space-sm">
-              <span className="material-symbols-outlined text-coral-accent text-[18px] shrink-0">error</span>
-              <span className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-coral-accent">
+            <div className="border border-error bg-error/10 p-space-sm flex items-center gap-space-sm" role="alert">
+              <span className="material-symbols-outlined text-error text-[18px] shrink-0" aria-hidden="true">error</span>
+              <span className="font-body-sm text-body-sm font-bold text-error">
                 {error}
               </span>
             </div>
@@ -107,54 +101,58 @@ export default function LoginPage() {
 
           <div className="border border-on-surface">
             <div className="border-b border-on-surface p-space-sm bg-surface-container-low">
-              <label className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant">
-                EMAIL ADDRESS
+              <label htmlFor="login-email" className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant">
+                Email address
               </label>
             </div>
             <input
+              id="login-email"
               type="email"
               required
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="demo@offset.io"
-              className="w-full px-space-md py-space-sm bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-low"
+              placeholder="you@example.com"
+              className="min-h-[44px] w-full px-space-md py-space-sm bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-low"
             />
           </div>
 
           <div className="border border-on-surface">
             <div className="border-b border-on-surface p-space-sm bg-surface-container-low">
-              <label className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant">
-                PASSWORD
+              <label htmlFor="login-password" className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant">
+                Password
               </label>
             </div>
             <input
+              id="login-password"
               type="password"
               required
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-space-md py-space-sm bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-low"
+              className="min-h-[44px] w-full px-space-md py-space-sm bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-low"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-space-sm bg-on-surface text-surface-container-lowest font-label-caps-md text-label-caps-md uppercase font-bold border border-on-surface hover:bg-primary transition-none disabled:opacity-50 flex items-center justify-center gap-space-xs"
+            className="min-h-[44px] w-full py-space-sm bg-on-surface text-surface-container-lowest font-label-caps-md text-label-caps-md uppercase font-bold border border-on-surface hover:bg-primary transition-none disabled:opacity-50 flex items-center justify-center gap-space-xs"
           >
-            <span className="material-symbols-outlined text-[18px]">
+            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
               {loading ? 'hourglass_top' : 'login'}
             </span>
-            <span>{loading ? 'AUTHENTICATING...' : 'SIGN IN TO CARBON LEDGER'}</span>
+            <span>{loading ? 'Signing in…' : 'Sign in'}</span>
           </button>
 
           <div className="pt-space-xs border-t border-on-surface flex items-center justify-between font-label-caps-sm text-label-caps-sm uppercase font-bold">
-            <span className="text-on-surface-variant">NO ACCOUNT?</span>
+            <span className="text-on-surface-variant">New here?</span>
             <Link
               href="/auth/register"
-              className="text-primary hover:underline"
+              className="min-h-[44px] inline-flex items-center text-primary hover:underline"
             >
-              CREATE ACCOUNT →
+              Create an account →
             </Link>
           </div>
         </form>
@@ -162,7 +160,7 @@ export default function LoginPage() {
         {/* Footer */}
         <div className="border-t border-on-surface bg-surface-container-low p-space-md">
           <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold text-center">
-            SECURE SESSION • DATA ENCRYPTED AT REST • ISO 14064-1 COMPLIANT
+            Passwords are hashed · sessions expire after 7 days
           </div>
         </div>
       </div>

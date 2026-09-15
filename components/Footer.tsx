@@ -5,79 +5,76 @@ export default function Footer() {
     <footer className="w-full bg-surface-container-lowest border-t border-on-surface text-on-surface">
       {/* 4-Column Broadsheet Row */}
       <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-b border-on-surface">
-        {/* Col 1: Colophon */}
+        {/* Col 1: About */}
         <div className="p-space-lg border-b sm:border-b lg:border-b-0 lg:border-r border-on-surface flex flex-col justify-between">
           <div className="space-y-space-sm">
             <div className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface">
-              OFFSET.IO / COLOPHON
+              About offset.io
             </div>
             <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-              Open-source decarbonization accounting framework and personal emissions audit ledger. Swiss International grid architecture with deterministic math models.
+              Estimate your personal carbon footprint from everyday activities — travel, home energy, food, and waste — then explore practical ways to reduce it.
             </p>
           </div>
           <div className="mt-space-md pt-space-sm border-t border-on-surface">
-            <span className="font-label-caps-sm text-label-caps-sm text-on-surface-variant uppercase">
-              SYS_BUILD_VER: 2026.09-R4
-            </span>
+            <Link href="/calculate" className="font-label-caps-sm text-label-caps-sm text-primary uppercase font-bold hover:underline">
+              See how we calculate →
+            </Link>
           </div>
         </div>
 
-        {/* Col 2: Methodology & Standards */}
+        {/* Col 2: Data sources */}
         <div className="p-space-lg border-b sm:border-b lg:border-b-0 lg:border-r border-on-surface flex flex-col justify-between">
           <div className="space-y-space-sm">
             <div className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface">
-              METHODOLOGY &amp; STANDARDS
+              Emission data sources
             </div>
             <ul className="font-body-sm text-body-sm text-on-surface-variant space-y-1">
-              <li>• GHG Protocol Corporate Standard v3.1</li>
-              <li>• IPCC Sixth Assessment Report (AR6 GWP-100)</li>
-              <li>• DEFRA Conversion Factors 2025.08</li>
-              <li>• EPA eGRID Subregion Matrix 2024</li>
+              <li>• DEFRA 2023 conversion factors</li>
+              <li>• US EPA eGRID 2023 grid data</li>
+              <li>• IPCC greenhouse gas guidelines</li>
+              <li>• IEA global electricity averages</li>
             </ul>
           </div>
           <div className="mt-space-md">
             <span className="font-label-caps-sm text-label-caps-sm uppercase px-space-xs py-0.5 border border-on-surface bg-surface-container font-bold">
-              AUDIT: ISO 14064-3
+              Estimates, not certified measurements
             </span>
           </div>
         </div>
 
-        {/* Col 3: Ledger Dispatch */}
+        {/* Col 3: What you can do */}
         <div className="p-space-lg border-b sm:border-b-0 lg:border-r border-on-surface flex flex-col justify-between">
           <div className="space-y-space-sm">
             <div className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface">
-              LEDGER DISPATCH
+              What you can do
             </div>
             <div className="font-body-sm text-body-sm text-on-surface-variant space-y-1">
-              <p>Scope 1 Direct Combustion: Monitored</p>
-              <p>Scope 2 Grid Electricity: Location-based</p>
-              <p>Scope 3 Value Chain: Capped 15-tier</p>
-              <p>Offset Integrity Index: Gold Standard / Verra</p>
+              <p><Link href="/dashboard" className="hover:text-on-surface hover:underline">See your footprint</Link></p>
+              <p><Link href="/simulator" className="hover:text-on-surface hover:underline">Try changes before you make them</Link></p>
+              <p><Link href="/reduction-plan" className="hover:text-on-surface hover:underline">Build a reduction plan</Link></p>
+              <p><Link href="/diary" className="hover:text-on-surface hover:underline">Track each day</Link></p>
             </div>
           </div>
           <div className="mt-space-md pt-space-sm border-t border-on-surface">
             <span className="font-label-caps-sm text-label-caps-sm text-on-surface-variant uppercase">
-              FACTOR_REV: EF-2026-Q3
+              Free for personal use
             </span>
           </div>
         </div>
 
-        {/* Col 4: Station Telemetry */}
+        {/* Col 4: Good to know */}
         <div className="p-space-lg flex flex-col justify-between">
           <div className="space-y-space-sm">
             <div className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface">
-              STATION TELEMETRY
+              Good to know
             </div>
             <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-              All emissions factors, grid carbon intensity feeds, and marginal abatement curves update synchronously at 00:00 UTC.
+              Your estimates update whenever your activities change. The coach works offline using your saved data — no paid services required.
             </p>
           </div>
           <div className="mt-space-md pt-space-sm border-t border-on-surface flex items-center justify-between">
             <span className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface">
-              © 2026 OFFSET.IO
-            </span>
-            <span className="font-label-caps-sm text-label-caps-sm uppercase px-space-xs py-0.5 bg-primary text-on-primary font-bold">
-              LIVE ACTIVE
+              © 2026 offset.io
             </span>
           </div>
         </div>
@@ -85,11 +82,11 @@ export default function Footer() {
 
       {/* Sub-Footer Keyline */}
       <div className="w-full px-space-lg py-space-sm flex flex-col sm:flex-row items-center justify-between gap-space-sm font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant bg-surface-container-low">
-        <span>STRICT MECHANICAL GRID • ZERO BORDER RADIUS • ISO 14064 COMPLIANT</span>
+        <span>Personal footprint estimates · sources shown on every result</span>
         <div className="flex items-center space-x-space-md">
-          <Link href="/insights" className="hover:text-on-surface">METHODOLOGY</Link>
-          <Link href="/simulator" className="hover:text-on-surface">SIMULATION SPECS</Link>
-          <Link href="/admin" className="hover:text-on-surface">REGISTRY</Link>
+          <Link href="/calculate" className="hover:text-on-surface min-h-[44px] inline-flex items-center">How we calculate</Link>
+          <Link href="/simulator" className="hover:text-on-surface min-h-[44px] inline-flex items-center">Try changes</Link>
+          <Link href="/diary" className="hover:text-on-surface min-h-[44px] inline-flex items-center">Daily log</Link>
         </div>
       </div>
     </footer>

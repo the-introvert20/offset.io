@@ -9,7 +9,7 @@ export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [region, setRegion] = useState('IN');
+  const [region, setRegion] = useState('US');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -34,7 +34,7 @@ export default function RegisterPage() {
 
       router.push('/onboarding');
     } catch {
-      setError('SYSTEM ERROR: REGISTRATION ENDPOINT UNREACHABLE');
+      setError('Connection problem — please check your connection and try again.');
       setLoading(false);
     }
   };
@@ -53,43 +53,37 @@ export default function RegisterPage() {
         {/* Panel Header */}
         <div className="border-b border-on-surface bg-surface-container-low flex items-stretch">
           <div className="p-space-md border-r border-on-surface flex items-center">
-            <span className="w-8 h-8 bg-primary flex items-center justify-center text-on-primary font-bold text-sm">O</span>
+            <span className="w-8 h-8 bg-primary flex items-center justify-center text-on-primary font-bold text-sm" aria-hidden="true">O</span>
           </div>
           <div className="p-space-md flex-1">
             <div className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface">
-              offset.io // CARBON INTELLIGENCE PLATFORM
+              Create your account
             </div>
             <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold mt-0.5">
-              CREATE PERSONAL CARBON LEDGER ACCOUNT
+              Free · takes a minute
             </div>
           </div>
           <div className="p-space-md border-l border-on-surface bg-secondary-fixed flex items-center">
-            <span className="material-symbols-outlined text-on-secondary-fixed text-[20px]">person_add</span>
+            <span className="material-symbols-outlined text-on-secondary-fixed text-[20px]" aria-hidden="true">person_add</span>
           </div>
         </div>
 
         {/* Info Banner */}
         <div className="border-b border-on-surface bg-surface-container p-space-md">
           <div className="flex items-start gap-space-sm">
-            <span className="material-symbols-outlined text-primary text-[18px] mt-0.5 shrink-0">info</span>
+            <span className="material-symbols-outlined text-primary text-[18px] mt-0.5 shrink-0" aria-hidden="true">info</span>
             <p className="font-body-sm text-body-sm text-on-surface">
-              Register to initialize your personal carbon intelligence ledger. After sign-up, complete the onboarding baseline assessment to calibrate your emissions profile.
+              After signing up, you&apos;ll answer 5 quick questions so we can estimate your footprint.
             </p>
           </div>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-space-lg space-y-space-md bg-surface-container-lowest">
-          <div>
-            <span className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface-variant block mb-space-sm">
-              ACCOUNT PARAMETERS
-            </span>
-          </div>
-
           {error && (
-            <div className="border border-coral-accent bg-coral-accent/10 p-space-sm flex items-center gap-space-sm">
-              <span className="material-symbols-outlined text-coral-accent text-[18px] shrink-0">error</span>
-              <span className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-coral-accent">
+            <div className="border border-error bg-error/10 p-space-sm flex items-center gap-space-sm" role="alert">
+              <span className="material-symbols-outlined text-error text-[18px] shrink-0" aria-hidden="true">error</span>
+              <span className="font-body-sm text-body-sm font-bold text-error">
                 {error}
               </span>
             </div>
@@ -98,72 +92,83 @@ export default function RegisterPage() {
           {/* Name */}
           <div className="border border-on-surface">
             <div className="border-b border-on-surface p-space-sm bg-surface-container-low flex items-center justify-between">
-              <label className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant">
-                FULL NAME
+              <label htmlFor="register-name" className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant">
+                Your name
               </label>
-              <span className="material-symbols-outlined text-[16px] text-on-surface-variant">person</span>
+              <span className="material-symbols-outlined text-[16px] text-on-surface-variant" aria-hidden="true">person</span>
             </div>
             <input
+              id="register-name"
               type="text"
               required
+              autoComplete="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Alex Rivera"
-              className="w-full px-space-md py-space-sm bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-low"
+              className="min-h-[44px] w-full px-space-md py-space-sm bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-low"
             />
           </div>
 
           {/* Email */}
           <div className="border border-on-surface">
             <div className="border-b border-on-surface p-space-sm bg-surface-container-low flex items-center justify-between">
-              <label className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant">
-                EMAIL ADDRESS
+              <label htmlFor="register-email" className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant">
+                Email address
               </label>
-              <span className="material-symbols-outlined text-[16px] text-on-surface-variant">mail</span>
+              <span className="material-symbols-outlined text-[16px] text-on-surface-variant" aria-hidden="true">mail</span>
             </div>
             <input
+              id="register-email"
               type="email"
               required
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="alex@example.com"
-              className="w-full px-space-md py-space-sm bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-low"
+              className="min-h-[44px] w-full px-space-md py-space-sm bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-low"
             />
           </div>
 
           {/* Password */}
           <div className="border border-on-surface">
             <div className="border-b border-on-surface p-space-sm bg-surface-container-low flex items-center justify-between">
-              <label className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant">
-                PASSWORD
+              <label htmlFor="register-password" className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant">
+                Password (at least 6 characters)
               </label>
-              <span className="material-symbols-outlined text-[16px] text-on-surface-variant">key</span>
+              <span className="material-symbols-outlined text-[16px] text-on-surface-variant" aria-hidden="true">key</span>
             </div>
             <input
+              id="register-password"
               type="password"
               required
+              minLength={6}
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-space-md py-space-sm bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-low"
+              className="min-h-[44px] w-full px-space-md py-space-sm bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-low"
             />
           </div>
 
           {/* Region */}
           <div className="border border-on-surface">
             <div className="border-b border-on-surface p-space-sm bg-surface-container-low flex items-center justify-between">
-              <label className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant">
-                GRID REGION / COUNTRY
+              <label className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant" id="register-region-label">
+                Where do you live?
               </label>
-              <span className="material-symbols-outlined text-[16px] text-on-surface-variant">language</span>
+              <span className="material-symbols-outlined text-[16px] text-on-surface-variant" aria-hidden="true">language</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-0">
+            <p className="px-space-md pt-space-xs font-body-sm text-body-sm text-on-surface-variant">
+              Sets your electricity factor. You can change it later.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 p-space-sm" role="group" aria-labelledby="register-region-label">
               {regions.map((r) => (
                 <button
                   key={r.value}
                   type="button"
                   onClick={() => setRegion(r.value)}
-                  className={`p-space-sm text-left border-b border-r border-on-surface font-label-caps-sm text-label-caps-sm uppercase font-bold transition-none ${
+                  aria-pressed={region === r.value}
+                  className={`min-h-[44px] p-space-sm text-left border-b border-r border-on-surface font-label-caps-sm text-label-caps-sm uppercase font-bold transition-none ${
                     region === r.value
                       ? 'bg-on-surface text-surface-container-lowest'
                       : 'bg-surface-container-lowest text-on-surface hover:bg-surface-container-high'
@@ -178,21 +183,21 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-space-sm bg-on-surface text-surface-container-lowest font-label-caps-md text-label-caps-md uppercase font-bold border border-on-surface hover:bg-primary transition-none disabled:opacity-50 flex items-center justify-center gap-space-xs"
+            className="min-h-[44px] w-full py-space-sm bg-on-surface text-surface-container-lowest font-label-caps-md text-label-caps-md uppercase font-bold border border-on-surface hover:bg-primary transition-none disabled:opacity-50 flex items-center justify-center gap-space-xs"
           >
-            <span className="material-symbols-outlined text-[18px]">
+            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
               {loading ? 'hourglass_top' : 'person_add'}
             </span>
-            <span>{loading ? 'CREATING ACCOUNT...' : 'CREATE CARBON LEDGER ACCOUNT →'}</span>
+            <span>{loading ? 'Creating your account…' : 'Create account →'}</span>
           </button>
 
           <div className="pt-space-xs border-t border-on-surface flex items-center justify-between font-label-caps-sm text-label-caps-sm uppercase font-bold">
-            <span className="text-on-surface-variant">EXISTING ACCOUNT?</span>
+            <span className="text-on-surface-variant">Already have an account?</span>
             <Link
               href="/auth/login"
-              className="text-primary hover:underline"
+              className="min-h-[44px] inline-flex items-center text-primary hover:underline"
             >
-              SIGN IN →
+              Sign in →
             </Link>
           </div>
         </form>
@@ -200,7 +205,7 @@ export default function RegisterPage() {
         {/* Footer */}
         <div className="border-t border-on-surface bg-surface-container-low p-space-md">
           <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold text-center">
-            PERSONAL DATA STORED LOCALLY • ISO 14064-1 FRAMEWORK • ZERO TRACKING
+            We store your profile and activities on this server to compute your footprint
           </div>
         </div>
       </div>

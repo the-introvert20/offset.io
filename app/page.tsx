@@ -12,17 +12,13 @@ export default function LandingPage() {
   // Rapid Calculator State
   const [calcMode, setCalcMode] = useState<'car' | 'ev' | 'transit' | 'active'>('car');
   const [calcDistance, setCalcDistance] = useState(240);
-  const [calcDiet, setCalcDiet] = useState<'omnivore' | 'pescatarian' | 'vegetarian' | 'vegan'>('omnivore');
+  const [calcDiet, setCalcDiet] = useState<'high_meat' | 'mixed' | 'vegetarian' | 'plant_based'>('mixed');
 
-  // Filter Bar State
-  const [filterSector, setFilterSector] = useState('all');
-  const [filterFreq, setFilterFreq] = useState('annual');
-  const [filterScope, setFilterScope] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  // (The old decorative filter bar was removed — section links below do the navigating.)
 
-  // Simulator math
+  // Simulator math (illustrative example — signed-in calculation uses the factor database)
   const baseEmissionsTonnes = 4.82;
-  const driveDiffKg = (driveKm - 240) * 52 * 0.210;
+  const driveDiffKg = (driveKm - 240) * 52 * 0.192;
   const tempDiffKg = -(tempDelta * 120);
   const dietDiffKg = -(dietDays - 3) * 92;
   const totalDiffKg = driveDiffKg + tempDiffKg + dietDiffKg;
@@ -30,16 +26,16 @@ export default function LandingPage() {
   const netSavingsKg = -totalDiffKg;
   const percentReduction = (((baseEmissionsTonnes - netTonnes) / baseEmissionsTonnes) * 100);
 
-  // Quick Calculator estimated annual tons
-  const transitFactors = { car: 0.210, ev: 0.065, transit: 0.040, active: 0.0 };
-  const dietFactors = { omnivore: 2200, pescatarian: 1600, vegetarian: 1200, vegan: 800 };
+  // Quick Calculator estimated annual tons (illustrative example factors)
+  const transitFactors = { car: 0.192, ev: 0.053, transit: 0.089, active: 0.0 };
+  const dietFactors = { high_meat: 2628, mixed: 2044, vegetarian: 1387, plant_based: 912 };
   const calcAnnualTonnes = +(
     ((calcDistance * 52 * transitFactors[calcMode]) + 1156 + dietFactors[calcDiet] + 385) / 1000
   ).toFixed(2);
 
   return (
     <div className="flex flex-col w-full text-on-surface bg-surface-container-lowest">
-      {/* 1. STRICT SWISS MECHANICAL HEADER BAND (TICKER) */}
+      {/* 1. Top status band */}
       <section className="w-full bg-surface-container-low border-b border-on-surface flex flex-col md:flex-row items-stretch justify-between text-on-surface select-none">
         <div className="px-space-md py-space-xs border-b md:border-b-0 md:border-r border-on-surface flex items-center space-x-space-sm bg-surface-container-lowest">
           <span className="w-2.5 h-2.5 bg-coral-accent animate-pulse"></span>
@@ -49,14 +45,14 @@ export default function LandingPage() {
         </div>
         <div className="px-space-md py-space-xs border-b md:border-b-0 md:border-r border-on-surface flex items-center flex-1 justify-center bg-surface-container-lowest">
           <span className="font-label-caps-md text-label-caps-md uppercase tracking-wide text-on-surface">
-            GLOBAL PERSONAL TARGET CEILING: <span className="text-primary font-bold">&lt; 2.30 t CO₂e / YR</span> • 1.5°C CLIMATE BUDGET
+            EXAMPLE BENCHMARK: <span className="text-primary font-bold">under 2.30 t CO₂e / yr</span> · this page shows example numbers
           </span>
         </div>
         <div className="px-space-md py-space-xs flex items-center justify-between md:justify-end space-x-space-md bg-secondary-fixed text-on-secondary-fixed">
           <span className="font-label-caps-sm text-label-caps-sm uppercase tracking-widest font-bold">
             ILLUSTRATIVE PREVIEW • CREATE AN ACCOUNT FOR PERSONAL RESULTS
           </span>
-          <span className="material-symbols-outlined text-[16px]">sensors</span>
+          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">sensors</span>
         </div>
       </section>
 
@@ -69,33 +65,32 @@ export default function LandingPage() {
               PERSONAL CARBON INTELLIGENCE &amp; REDUCTION
             </div>
             <h1 className="font-display text-headline-xl lg:text-display-hero uppercase leading-[0.9] tracking-tighter text-on-surface">
-              YOUR<br />CARBON<br />HAS A<br />
-              <span className="text-surface-container-lowest underline decoration-4 decoration-on-surface">SIGNAL.</span>
+              KNOW YOUR<br />CARBON<br />FOOTPRINT.
             </h1>
             <p className="font-body-lg text-body-lg text-on-surface font-normal pt-space-xs leading-relaxed max-w-lg">
-              offset.io transforms everyday movement, residential energy, dietary choices, and supply consumption into an empirical, living baseline. Measure real signals. Decarbonize deterministic trajectories.
+              offset.io turns everyday travel, home energy, food, and shopping into a clear yearly estimate — then helps you try changes, build a plan, and track progress.
             </p>
           </div>
 
           <div className="pt-space-xl space-y-space-md">
             <div className="flex flex-col sm:flex-row items-stretch gap-0">
               <Link
-                href="/calculate"
-                className="px-space-lg py-space-md bg-on-surface text-surface-container-lowest border border-on-surface font-label-caps-md text-label-caps-md uppercase tracking-wider hover:bg-primary hover:text-on-primary transition-none flex items-center justify-center space-x-space-xs font-bold"
+                href="/auth/register"
+                className="min-h-[44px] px-space-lg py-space-md bg-on-surface text-surface-container-lowest border border-on-surface font-label-caps-md text-label-caps-md uppercase tracking-wider hover:bg-primary hover:text-on-primary transition-none flex items-center justify-center space-x-space-xs font-bold"
               >
-                <span>CALCULATE MY FOOTPRINT</span>
-                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                <span>Start my footprint — it&apos;s free</span>
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span>
               </Link>
-              <Link
-                href="/simulator"
-                className="px-space-md py-space-md bg-surface-container-lowest text-on-surface border-t sm:border-t border-b sm:border-b-0 sm:border-r border-l border-on-surface font-label-caps-md text-label-caps-md uppercase tracking-wider hover:bg-surface-container-high transition-none flex items-center justify-center font-bold"
+              <a
+                href="#calculator"
+                className="min-h-[44px] px-space-md py-space-md bg-surface-container-lowest text-on-surface border-t sm:border-t border-b sm:border-b-0 sm:border-r border-l border-on-surface font-label-caps-md text-label-caps-md uppercase tracking-wider hover:bg-surface-container-high transition-none flex items-center justify-center font-bold"
               >
-                EXPLORE SCENARIOS
-              </Link>
+                Try the example calculator
+              </a>
             </div>
             <div className="pt-space-xs flex items-center space-x-space-xs font-label-caps-sm text-label-caps-sm uppercase text-on-surface font-semibold">
-              <span className="material-symbols-outlined text-[16px] text-primary">verified</span>
-              <span>ILLUSTRATIVE EXAMPLE — PERSONAL RESULTS USE YOUR SAVED ACTIVITIES AND FACTORS</span>
+              <span className="material-symbols-outlined text-[16px] text-primary" aria-hidden="true">verified</span>
+              <span>Everything below is an example — your account uses your answers and sourced factors</span>
             </div>
           </div>
         </div>
@@ -112,28 +107,28 @@ export default function LandingPage() {
               
               <div className="grid grid-cols-3 gap-2 h-64 border border-on-surface bg-surface-container-low p-2">
                 <div className="col-span-2 bg-[#00B2FE] border border-on-surface p-4 flex flex-col justify-between text-on-surface">
-                  <span className="font-label-caps-sm uppercase font-bold text-white">01 // TRANSIT VECTOR</span>
+                  <span className="font-label-caps-sm uppercase font-bold">01 · Getting around (example)</span>
                   <div className="font-display text-4xl font-bold">2,506 <span className="text-sm font-normal">kg CO₂e</span></div>
-                  <div className="text-xs uppercase font-label font-bold text-white/90">HIGHWAY + RAIL EMISSIONS</div>
+                  <div className="text-xs uppercase font-label font-bold">Car + rail emissions</div>
                 </div>
                 <div className="col-span-1 bg-primary text-white border border-on-surface p-4 flex flex-col justify-between">
-                  <span className="font-label-caps-sm uppercase font-bold text-primary-fixed">02 // GRID</span>
+                  <span className="font-label-caps-sm uppercase font-bold text-primary-fixed">02 · Home power</span>
                   <div className="font-display text-2xl font-bold">1,156 <span className="text-xs">kg</span></div>
-                  <div className="text-[10px] uppercase font-label">KWH LOAD</div>
+                  <div className="text-xs uppercase font-label font-bold">Example units</div>
                 </div>
-                <div className="col-span-1 bg-coral-accent text-white border border-on-surface p-3 flex flex-col justify-between">
-                  <span className="font-label-caps-sm uppercase font-bold">03 // DIET</span>
+                <div className="col-span-1 bg-coral-accent text-on-surface border border-on-surface p-3 flex flex-col justify-between">
+                  <span className="font-label-caps-sm uppercase font-bold">03 · Food</span>
                   <div className="font-display text-xl font-bold">772 <span className="text-xs">kg</span></div>
                 </div>
                 <div className="col-span-2 bg-yellow-accent text-on-surface border border-on-surface p-3 flex flex-col justify-between">
-                  <span className="font-label-caps-sm uppercase font-bold">04 // GOODS &amp; LIFE-CYCLE</span>
+                  <span className="font-label-caps-sm uppercase font-bold">04 · Shopping &amp; waste</span>
                   <div className="font-display text-xl font-bold">385 <span className="text-xs">kg</span></div>
                 </div>
               </div>
 
               <div className="mt-4 pt-2 border-t border-on-surface flex items-center justify-between font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant">
-                <span>GEO: 52°31&apos;N 13°24&apos;E</span>
-                <span className="text-primary font-bold">ILLUSTRATIVE EMISSION MODEL</span>
+                <span>Example mix of four everyday areas</span>
+                <span className="text-primary font-bold">Example numbers</span>
               </div>
             </div>
           </div>
@@ -148,92 +143,28 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 3. FILTER & LOCATOR INTERACTION BAR */}
-      <section className="w-full border-b border-on-surface bg-surface-container-lowest py-space-sm px-space-md md:px-space-lg">
+      {/* 3. SECTION SHORTCUTS — honest anchor navigation */}
+      <nav aria-label="Page sections" className="w-full border-b border-on-surface bg-surface-container-lowest py-space-sm px-space-md md:px-space-lg">
         <div className="w-full flex flex-col lg:flex-row items-stretch lg:items-center gap-space-sm border border-on-surface p-space-xs bg-surface-container-lowest">
-          {/* Search Box */}
-          <div className="flex items-stretch flex-1 border border-on-surface">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="SEARCH SECTOR, ACTIVITY, COMMUTER CORRIDOR, FLIGHT..."
-              className="w-full px-space-md py-space-xs text-body-sm font-body bg-surface-container-lowest text-on-surface focus:outline-none placeholder:text-outline uppercase"
-            />
-            <button
-              type="button"
-              className="px-space-md bg-surface-container-high border-l border-on-surface flex items-center justify-center text-on-surface hover:bg-on-surface hover:text-surface-container-lowest transition-none"
-            >
-              <span className="material-symbols-outlined text-[20px]">search</span>
-            </button>
-          </div>
-
-          {/* Controls group */}
+          <span className="font-label-caps-md text-label-caps-md uppercase text-on-surface px-space-xs font-bold">
+            Explore this page:
+          </span>
           <div className="flex flex-wrap items-center gap-space-xs">
-            <span className="font-label-caps-md text-label-caps-md uppercase text-on-surface px-space-xs font-bold">
-              FILTER:
-            </span>
-
-            {/* Region Dropdown */}
-            <div className="relative border border-on-surface bg-surface-container-lowest flex items-center">
-              <select
-                value={filterSector}
-                onChange={(e) => setFilterSector(e.target.value)}
-                className="appearance-none bg-transparent pl-space-sm pr-space-lg py-space-xs font-label-caps-sm text-label-caps-sm uppercase text-on-surface focus:outline-none cursor-pointer font-bold"
-              >
-                <option value="all">Region: Global Median</option>
-                <option value="na">Region: North America (US/CA)</option>
-                <option value="eu">Region: Western Europe (EU-27)</option>
-                <option value="apac">Region: Asia Pacific Metro</option>
-              </select>
-              <span className="material-symbols-outlined pointer-events-none absolute right-1 text-[16px]">unfold_more</span>
-            </div>
-
-            {/* Frequency Dropdown */}
-            <div className="relative border border-on-surface bg-surface-container-lowest flex items-center">
-              <select
-                value={filterFreq}
-                onChange={(e) => setFilterFreq(e.target.value)}
-                className="appearance-none bg-transparent pl-space-sm pr-space-lg py-space-xs font-label-caps-sm text-label-caps-sm uppercase text-on-surface focus:outline-none cursor-pointer font-bold"
-              >
-                <option value="annual">Interval: Annual Rolling (2026)</option>
-                <option value="monthly">Interval: Monthly Aggregate</option>
-                <option value="weekly">Interval: Weekly Horizon</option>
-              </select>
-              <span className="material-symbols-outlined pointer-events-none absolute right-1 text-[16px]">unfold_more</span>
-            </div>
-
-            {/* Scope Dropdown */}
-            <div className="relative border border-on-surface bg-surface-container-lowest flex items-center">
-              <select
-                value={filterScope}
-                onChange={(e) => setFilterScope(e.target.value)}
-                className="appearance-none bg-transparent pl-space-sm pr-space-lg py-space-xs font-label-caps-sm text-label-caps-sm uppercase text-on-surface focus:outline-none cursor-pointer font-bold"
-              >
-                <option value="all">Scopes: All (Scope 1, 2, 3)</option>
-                <option value="scope1">Direct: Scope 1 (Combustion)</option>
-                <option value="scope2">Purchased: Scope 2 (Grid)</option>
-                <option value="scope3">Upstream: Scope 3 (Supply Chain)</option>
-              </select>
-              <span className="material-symbols-outlined pointer-events-none absolute right-1 text-[16px]">unfold_more</span>
-            </div>
-
-            {/* Clear Button */}
-            <button
-              type="button"
-              onClick={() => {
-                setSearchQuery('');
-                setFilterSector('all');
-                setFilterFreq('annual');
-                setFilterScope('all');
-              }}
-              className="px-space-md py-space-xs bg-surface-container border border-on-surface font-label-caps-sm text-label-caps-sm uppercase text-on-surface hover:bg-on-surface hover:text-surface-container-lowest transition-none font-bold"
-            >
-              Clear Filters
-            </button>
+            <a href="#what-if" className="min-h-[44px] inline-flex items-center px-space-md py-space-xs bg-surface-container-lowest border border-on-surface font-label-caps-sm text-label-caps-sm uppercase text-on-surface hover:bg-on-surface hover:text-surface-container-lowest transition-none font-bold">
+              Try changes
+            </a>
+            <a href="#calculator" className="min-h-[44px] inline-flex items-center px-space-md py-space-xs bg-surface-container-lowest border border-on-surface font-label-caps-sm text-label-caps-sm uppercase text-on-surface hover:bg-on-surface hover:text-surface-container-lowest transition-none font-bold">
+              Example calculator
+            </a>
+            <a href="#plan-preview" className="min-h-[44px] inline-flex items-center px-space-md py-space-xs bg-surface-container-lowest border border-on-surface font-label-caps-sm text-label-caps-sm uppercase text-on-surface hover:bg-on-surface hover:text-surface-container-lowest transition-none font-bold">
+              Reduction ideas
+            </a>
+            <a href="#diary-preview" className="min-h-[44px] inline-flex items-center px-space-md py-space-xs bg-surface-container-lowest border border-on-surface font-label-caps-sm text-label-caps-sm uppercase text-on-surface hover:bg-on-surface hover:text-surface-container-lowest transition-none font-bold">
+              Daily tracking
+            </a>
           </div>
         </div>
-      </section>
+      </nav>
 
       {/* 4. THE EDITORIAL DASHBOARD SPREAD */}
       <section className="w-full border-b border-on-surface bg-surface-container-lowest">
@@ -243,7 +174,7 @@ export default function LandingPage() {
             <div>
               <div className="flex items-center justify-between border-b border-on-surface pb-space-sm mb-space-md">
                 <span className="font-label-caps-md text-label-caps-md uppercase text-on-surface font-bold tracking-wider">
-                  YOUR CURRENT SIGNAL • SERIAL #OFT-2026-901
+                  Example footprint
                 </span>
                 <span className="px-space-xs py-0.5 bg-secondary-fixed text-on-secondary-fixed font-label-caps-sm text-label-caps-sm uppercase font-bold">
                   STATUS: ILLUSTRATIVE
@@ -254,7 +185,7 @@ export default function LandingPage() {
                   ESTIMATED ROLLING ANNUAL INTENSITY
                 </div>
                 <div className="flex flex-wrap items-baseline gap-space-sm">
-                  <span className="font-display text-[80px] md:text-[110px] leading-none tracking-tighter text-on-surface font-bold">
+                  <span className="font-display text-[clamp(3rem,12vw,6.875rem)] leading-none tracking-tighter text-on-surface font-bold">
                     4.82
                   </span>
                   <div className="flex flex-col">
@@ -271,52 +202,52 @@ export default function LandingPage() {
 
             <div className="pt-space-md border-t border-on-surface flex flex-wrap items-center justify-between gap-space-sm">
               <div className="inline-flex items-center space-x-space-xs px-space-sm py-space-xs bg-surface-container border border-on-surface">
-                <span className="material-symbols-outlined text-primary text-[18px]">trending_down</span>
+                <span className="material-symbols-outlined text-primary text-[18px]" aria-hidden="true">trending_down</span>
                 <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface font-bold">
-                  vs 8.40 t Regional Average (−42.6%)
+                  Example: below a typical average
                 </span>
               </div>
               <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
-                ILLUSTRATIVE TARGET GAP: +2.52 t
+                Example gap to 2.3 t benchmark: +2.52 t
               </span>
             </div>
           </div>
 
-          {/* Box 2 (5 cols): Flame Coral Priority Lever */}
+          {/* Box 2 (5 cols): Example highlight */}
           <div className="lg:col-span-5 bg-coral-accent text-on-surface p-space-lg md:p-space-xl flex flex-col justify-between border-b lg:border-b-0">
             <div className="space-y-space-sm">
               <div className="flex items-center justify-between">
                 <span className="font-label-caps-md text-label-caps-md uppercase tracking-wider px-space-xs py-0.5 bg-surface-container-lowest text-on-surface border border-on-surface font-bold">
-                  CRITICAL PRIORITY
+                  Example idea
                 </span>
-                <span className="material-symbols-outlined text-[24px] text-surface-container-lowest">crisis_alert</span>
+                <span className="material-symbols-outlined text-[24px]" aria-hidden="true">crisis_alert</span>
               </div>
               <div className="pt-space-md">
-                <span className="font-label-caps-sm text-label-caps-sm uppercase tracking-widest text-surface-container-lowest font-bold">
-                  PRIMARY ABATEMENT OPPORTUNITY
+                <span className="font-label-caps-sm text-label-caps-sm uppercase tracking-widest font-bold">
+                  Biggest slice in this example: travel
                 </span>
-                <h2 className="font-headline text-headline-xl uppercase text-surface-container-lowest font-bold leading-none tracking-tight mt-1">
+                <h2 className="font-headline text-headline-xl uppercase font-bold leading-none tracking-tight mt-1">
                   TRANSPORTATION
                 </h2>
               </div>
               <div className="py-space-sm flex items-baseline space-x-space-xs">
-                <span className="font-display text-[56px] font-bold text-surface-container-lowest leading-none">−180</span>
+                <span className="font-display text-[clamp(2.5rem,8vw,3.5rem)] font-bold text-on-surface leading-none">−180</span>
                 <span className="font-headline text-headline-sm uppercase text-surface-container-lowest font-bold">
                   kg CO₂e / month
                 </span>
               </div>
-              <p className="font-body-md text-body-md text-surface-container-lowest leading-snug">
-                Immediate actionable switch: Transfer 2 weekly office commutes from single-occupancy combustion vehicle to regional rapid transit network.
+              <p className="font-body-md text-body-md leading-snug">
+                Example: switching two weekly drives to the train saves roughly this much in the example above.
               </p>
             </div>
 
             <div className="pt-space-lg">
               <Link
-                href="/reduction-plan"
-                className="w-full py-space-sm px-space-md bg-surface-container-lowest text-on-surface border border-on-surface font-label-caps-md text-label-caps-md uppercase font-bold hover:bg-on-surface hover:text-surface-container-lowest transition-none flex items-center justify-between"
+                href="/auth/register"
+                className="min-h-[44px] w-full py-space-sm px-space-md bg-surface-container-lowest text-on-surface border border-on-surface font-label-caps-md text-label-caps-md uppercase font-bold hover:bg-on-surface hover:text-surface-container-lowest transition-none flex items-center justify-between"
               >
-                <span>COMMIT COMMUTE SWITCH</span>
-                <span className="material-symbols-outlined text-[18px]">add_circle</span>
+                <span>Get suggestions for my life</span>
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">add_circle</span>
               </Link>
             </div>
           </div>
@@ -361,7 +292,7 @@ export default function LandingPage() {
                 <line stroke="currentColor" strokeDasharray="2 3" strokeWidth="1" x1="170" x2="170" y1="0" y2="340"></line>
                 <circle cx="170" cy="170" fill="none" r="50" stroke="#001fce" strokeDasharray="4 4" strokeWidth="2"></circle>
                 <text fill="#001fce" fontFamily="'Space Grotesk', sans-serif" fontSize="8" fontWeight="700" x="175" y="116">
-                  PARIS 2.30t BUDGET BOUNDARY
+                  EXAMPLE 2.30t BENCHMARK
                 </text>
                 <circle cx="170" cy="170" fill="none" r="85" stroke="#1c1b1b" strokeWidth="1"></circle>
                 <circle cx="170" cy="170" fill="none" r="120" stroke="#1c1b1b" strokeWidth="1"></circle>
@@ -377,7 +308,7 @@ export default function LandingPage() {
                 </text>
               </svg>
               <div className="absolute bottom-space-sm left-space-sm font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
-                COORDINATE: 52°31&apos;N 13°24&apos;E • ISO 14064-1
+                Example chart · your account shows your real mix
               </div>
             </div>
 
@@ -438,10 +369,10 @@ export default function LandingPage() {
               </div>
 
               <div className="mt-space-md pt-space-sm border-t border-on-surface flex items-center justify-between font-label-caps-sm text-label-caps-sm uppercase text-on-surface font-bold">
-                <span>SUM TOTAL: 4,819 kg CO₂e</span>
-                <Link href="/insights" className="text-primary hover:underline">
-                  EXPLORE DEFRA EMISSION FACTORS →
-                </Link>
+                <span>Example total: 4,819 kg CO₂e</span>
+                <a href="#calculator" className="text-primary hover:underline">
+                  Try the example calculator →
+                </a>
               </div>
             </div>
           </div>
@@ -463,8 +394,8 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="pt-space-md mt-space-md border-t border-on-surface flex items-center justify-between">
-              <span className="font-label-caps-sm text-label-caps-sm uppercase text-primary font-bold">ABATEMENT: −45%</span>
-              <span className="material-symbols-outlined text-[18px]">directions_subway</span>
+              <span className="font-label-caps-sm text-label-caps-sm uppercase text-primary font-bold">Example saving: −45%</span>
+              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">directions_subway</span>
             </div>
           </div>
 
@@ -482,8 +413,8 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="pt-space-md mt-space-md border-t border-on-surface flex items-center justify-between">
-              <span className="font-label-caps-sm text-label-caps-sm uppercase text-primary font-bold">ABATEMENT: −28%</span>
-              <span className="material-symbols-outlined text-[18px]">bolt</span>
+              <span className="font-label-caps-sm text-label-caps-sm uppercase text-primary font-bold">Example saving: −28%</span>
+              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">bolt</span>
             </div>
           </div>
 
@@ -501,8 +432,8 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="pt-space-md mt-space-md border-t border-on-surface flex items-center justify-between">
-              <span className="font-label-caps-sm text-label-caps-sm uppercase text-primary font-bold">ABATEMENT: −19%</span>
-              <span className="material-symbols-outlined text-[18px]">restaurant</span>
+              <span className="font-label-caps-sm text-label-caps-sm uppercase text-primary font-bold">Example saving: −19%</span>
+              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">restaurant</span>
             </div>
           </div>
 
@@ -520,25 +451,25 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="pt-space-md mt-space-md border-t border-on-surface flex items-center justify-between">
-              <span className="font-label-caps-sm text-label-caps-sm uppercase text-primary font-bold">ABATEMENT: −12%</span>
-              <span className="material-symbols-outlined text-[18px]">inventory_2</span>
+              <span className="font-label-caps-sm text-label-caps-sm uppercase text-primary font-bold">Example saving: −12%</span>
+              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">inventory_2</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 7. "WHAT IF?" MARGINAL ABATEMENT INTERACTIVE SIMULATOR */}
+      {/* 7. Interactive "what if" example */}
       <section className="w-full border-b border-on-surface bg-surface-container-low" id="what-if">
         <div className="p-space-lg md:p-space-xl border-b border-on-surface bg-surface-container-lowest">
           <div className="max-w-4xl">
             <span className="font-label-caps-sm text-label-caps-sm uppercase tracking-widest text-primary font-bold">
-              PREDICTIVE MARGINAL ABATEMENT
+              Interactive example
             </span>
             <h2 className="font-headline text-headline-xl uppercase text-on-surface font-bold tracking-tight mt-1">
-              WHAT HAPPENS IF YOU TWEAK YOUR LIFE?
+              What if you changed something?
             </h2>
             <p className="font-body-lg text-body-lg text-on-surface-variant mt-space-xs leading-relaxed">
-              An illustrative calculator for exploring how lifestyle changes can affect estimated emissions. Sign in to use your saved activities and sourced factors.
+              Move the sliders to see how small changes move an example footprint. Your free account does the same math with your real answers.
             </p>
           </div>
         </div>
@@ -604,9 +535,9 @@ export default function LandingPage() {
             <div className="space-y-space-xs border border-on-surface p-space-md bg-surface-container-low">
               <div className="flex items-center justify-between">
                 <label className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface" htmlFor="sliderDiet">
-                  PLANT-FORWARD DAYS / WEEK
+                  Plant-based days / week
                 </label>
-                <span className="font-headline text-headline-sm font-bold text-coral-accent">
+                <span className="font-headline text-headline-sm font-bold text-primary">
                   {dietDays} days
                 </span>
               </div>
@@ -634,9 +565,9 @@ export default function LandingPage() {
                 setTempDelta(0);
                 setDietDays(3);
               }}
-              className="w-full py-space-xs bg-surface-container border border-on-surface font-label-caps-sm text-label-caps-sm uppercase font-bold hover:bg-on-surface hover:text-surface-container-lowest transition-none"
+              className="min-h-[44px] w-full py-space-xs bg-surface-container border border-on-surface font-label-caps-sm text-label-caps-sm uppercase font-bold hover:bg-on-surface hover:text-surface-container-lowest transition-none"
             >
-              RESET SIMULATION TO CURRENT BASELINE
+              Reset example
             </button>
           </div>
 
@@ -645,10 +576,10 @@ export default function LandingPage() {
             <div>
               <div className="flex items-center justify-between border-b border-on-surface pb-space-sm mb-space-lg">
                 <span className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface">
-                  SIMULATED TRAJECTORY PROJECTION
+                  Example result
                 </span>
                 <span className="font-label-caps-sm text-label-caps-sm uppercase bg-cyan-accent text-on-surface font-bold px-space-xs py-0.5 border border-on-surface">
-                  DYNAMIC RUNTIME
+                  Updates live
                 </span>
               </div>
 
@@ -656,10 +587,10 @@ export default function LandingPage() {
               <div className="p-space-lg bg-surface-container-low border border-on-surface mb-space-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-md">
                 <div>
                   <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
-                    PREDICTED ANNUAL RUN-RATE
+                    Example yearly total
                   </div>
                   <div className="flex items-baseline space-x-space-xs">
-                    <span className="font-display text-[64px] font-bold leading-none text-on-surface">
+                    <span className="font-display text-[clamp(2.75rem,8vw,4rem)] font-bold leading-none text-on-surface">
                       {netTonnes.toFixed(2)}
                     </span>
                     <span className="font-headline text-headline-md uppercase font-bold text-on-surface">
@@ -669,7 +600,7 @@ export default function LandingPage() {
                 </div>
                 <div className="border-t sm:border-t-0 sm:border-l border-on-surface pt-space-sm sm:pt-0 sm:pl-space-lg space-y-1">
                   <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
-                    NET MARGINAL SAVINGS
+                    Difference vs example start
                   </div>
                   <div className={`font-headline text-headline-lg font-bold leading-none ${netSavingsKg >= 0 ? 'text-primary' : 'text-error'}`}>
                     {netSavingsKg >= 0 ? `−${Math.round(netSavingsKg)} kg / yr` : `+${Math.round(-netSavingsKg)} kg / yr`}
@@ -680,10 +611,10 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Trajectory Branches */}
+              {/* Fixed example comparisons */}
               <div className="space-y-space-sm font-label-caps-sm text-label-caps-sm uppercase font-bold">
                 <div className="p-space-sm bg-surface-container-lowest border border-on-surface flex items-center justify-between">
-                  <span className="w-32">BASELINE (CURRENT)</span>
+                  <span className="w-32">Example start</span>
                   <div className="flex-1 mx-space-md hidden sm:flex items-center">
                     <div className="w-full h-0.5 bg-on-surface relative">
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-on-surface"></div>
@@ -693,7 +624,7 @@ export default function LandingPage() {
                 </div>
 
                 <div className="p-space-sm bg-surface-container-lowest border border-on-surface flex items-center justify-between">
-                  <span className="w-32 text-secondary">LESS DRIVING (−50%)</span>
+                  <span className="w-32 text-secondary">Drive half as much</span>
                   <div className="flex-1 mx-space-md hidden sm:flex items-center">
                     <div className="w-full h-0.5 bg-secondary-container relative">
                       <div className="absolute right-[22%] top-1/2 -translate-y-1/2 w-3 h-3 bg-cyan-accent border border-on-surface"></div>
@@ -703,7 +634,7 @@ export default function LandingPage() {
                 </div>
 
                 <div className="p-space-sm bg-surface-container-lowest border border-on-surface flex items-center justify-between">
-                  <span className="w-32 text-primary">FULL TRANSIT + DIET</span>
+                  <span className="w-32 text-primary">Bus + greener eating</span>
                   <div className="flex-1 mx-space-md hidden sm:flex items-center">
                     <div className="w-full h-0.5 bg-primary-fixed relative">
                       <div className="absolute right-[36%] top-1/2 -translate-y-1/2 w-3 h-3 bg-primary border border-on-surface"></div>
@@ -713,7 +644,7 @@ export default function LandingPage() {
                 </div>
 
                 <div className="p-space-sm bg-yellow-accent border border-on-surface flex items-center justify-between text-on-surface">
-                  <span className="w-32">STRETCH TARGET</span>
+                  <span className="w-32">Ambitious example</span>
                   <div className="flex-1 mx-space-md hidden sm:flex items-center">
                     <div className="w-full h-0.5 bg-on-surface relative">
                       <div className="absolute right-[48%] top-1/2 -translate-y-1/2 w-3 h-3 bg-coral-accent border border-on-surface"></div>
@@ -724,28 +655,28 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="mt-space-lg pt-space-sm border-t border-on-surface flex items-center justify-between font-label-caps-sm text-label-caps-sm uppercase">
-              <span>ILLUSTRATIVE LIFESTYLE-CHANGE EXAMPLE</span>
-              <Link href="/simulator" className="text-on-surface font-bold hover:underline">
-                OPEN FULL SIMULATOR →
-              </Link>
-            </div>
+          <div className="mt-space-lg pt-space-sm border-t border-on-surface flex items-center justify-between font-label-caps-sm text-label-caps-sm uppercase">
+            <span>Example only — your account uses sourced factors for your region</span>
+            <Link href="/auth/register" className="min-h-[44px] inline-flex items-center text-on-surface font-bold hover:underline">
+              Get my real numbers →
+            </Link>
+          </div>
           </div>
         </div>
       </section>
 
-      {/* 8. RAPID FOOTPRINT BENCHMARK / 3-STEP CALCULATOR */}
+      {/* 8. EXAMPLE CALCULATOR IN 3 STEPS */}
       <section className="w-full border-b border-on-surface bg-surface-container-lowest p-space-lg md:p-space-xl" id="calculator">
         <div className="flex flex-col md:flex-row md:items-end justify-between max-w-7xl mb-space-lg border-b border-on-surface pb-space-sm gap-4">
           <div>
             <span className="font-label-caps-sm text-label-caps-sm uppercase tracking-widest text-primary font-bold">
-              CALCULATION PROTOCOL
+              Example · no account needed
             </span>
             <h2 className="font-headline text-headline-lg uppercase text-on-surface font-bold tracking-tight">
-              RAPID FOOTPRINT BENCHMARK
+              Try a 3-step example
             </h2>
             <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-              Recalibrate your base parameters in 3 steps without logging in.
+              Play with travel and food to see how the math works. Your account uses your real answers and region-specific factors.
             </p>
           </div>
           <div className="p-space-sm bg-surface-container border border-on-surface text-right">
@@ -763,17 +694,17 @@ export default function LandingPage() {
           <div className="p-space-md border-b lg:border-b-0 lg:border-r border-on-surface bg-surface-container-lowest flex flex-col justify-between">
             <div>
               <div className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-primary mb-space-xs">
-                01 // HOW DO YOU MOVE?
+                Step 1 · How you get around
               </div>
               <div className="font-label-caps-md text-label-caps-md uppercase font-bold mb-space-sm">
-                PRIMARY TRANSIT VECTOR
+                How you get around
               </div>
               <div className="grid grid-cols-1 gap-1">
                 {[
-                  { mode: 'car' as const, label: 'SOLO COMBUSTION CAR' },
-                  { mode: 'ev' as const, label: 'ELECTRIC VEHICLE (EV)' },
-                  { mode: 'transit' as const, label: 'METRO, RAIL & BUS' },
-                  { mode: 'active' as const, label: 'ACTIVE (BIKE / WALK)' },
+                  { mode: 'car' as const, label: 'Petrol car' },
+                  { mode: 'ev' as const, label: 'Electric car' },
+                  { mode: 'transit' as const, label: 'Bus / train' },
+                  { mode: 'active' as const, label: 'Bike / walking' },
                 ].map((item) => (
                   <button
                     key={item.mode}
@@ -786,7 +717,7 @@ export default function LandingPage() {
                     }`}
                   >
                     <span>{item.label}</span>
-                    {calcMode === item.mode && <span className="material-symbols-outlined text-[16px]">check</span>}
+                    {calcMode === item.mode && <span className="material-symbols-outlined text-[16px]" aria-hidden="true">check</span>}
                   </button>
                 ))}
               </div>
@@ -800,10 +731,10 @@ export default function LandingPage() {
           <div className="p-space-md border-b lg:border-b-0 lg:border-r border-on-surface bg-surface-container-lowest flex flex-col justify-between">
             <div>
               <div className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-primary mb-space-xs">
-                02 // WEEKLY DISTANCE
+                Step 2 · Weekly distance
               </div>
               <div className="font-label-caps-md text-label-caps-md uppercase font-bold mb-space-sm">
-                COMMUTER HORIZON
+                Weekly distance
               </div>
               <div className="border border-on-surface p-space-sm bg-surface-container-low mb-space-sm">
                 <label className="block font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant mb-1 font-bold" htmlFor="customDistance">
@@ -848,17 +779,17 @@ export default function LandingPage() {
           <div className="p-space-md bg-surface-container-lowest flex flex-col justify-between">
             <div>
               <div className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-primary mb-space-xs">
-                03 // HOME DIET MATRIX
+                Step 3 · Food
               </div>
               <div className="font-label-caps-md text-label-caps-md uppercase font-bold mb-space-sm">
-                FOOD CARBON PROFILE
+                Eating habits
               </div>
               <div className="grid grid-cols-1 gap-1">
                 {[
-                  { diet: 'omnivore' as const, label: 'OMNIVORE (REGULAR MEAT)' },
-                  { diet: 'pescatarian' as const, label: 'PESCATARIAN (FISH / DAIRY)' },
+                  { diet: 'high_meat' as const, label: 'HIGH-MEAT DIET' },
+                  { diet: 'mixed' as const, label: 'MIXED DIET' },
                   { diet: 'vegetarian' as const, label: 'VEGETARIAN (DAIRY / EGGS)' },
-                  { diet: 'vegan' as const, label: '100% VEGAN / PLANT BASED' },
+                  { diet: 'plant_based' as const, label: 'PLANT-BASED' },
                 ].map((item) => (
                   <button
                     key={item.diet}
@@ -871,7 +802,7 @@ export default function LandingPage() {
                     }`}
                   >
                     <span>{item.label}</span>
-                    {calcDiet === item.diet && <span className="material-symbols-outlined text-[16px]">check</span>}
+                    {calcDiet === item.diet && <span className="material-symbols-outlined text-[16px]" aria-hidden="true">check</span>}
                   </button>
                 ))}
               </div>
@@ -884,36 +815,36 @@ export default function LandingPage() {
 
         <div className="mt-space-md flex flex-col sm:flex-row items-center justify-between gap-4 p-space-md bg-surface-container border border-on-surface">
           <span className="font-body-md text-body-md font-medium">
-            Save this baseline to your official personal ledger to begin automated anomaly tracking.
+            Like this example? Create a free account and we&apos;ll build the same estimate from your real life.
           </span>
           <Link
-            href="/onboarding"
-            className="px-space-lg py-space-sm bg-primary text-on-primary font-label-caps-md uppercase font-bold border border-on-surface hover:bg-on-surface hover:text-white whitespace-nowrap"
+            href="/auth/register"
+            className="min-h-[44px] inline-flex items-center px-space-lg py-space-sm bg-primary text-on-primary font-label-caps-md uppercase font-bold border border-on-surface hover:bg-on-surface hover:text-white whitespace-nowrap"
           >
-            START OFFICIAL AUDIT →
+            Create a free account →
           </Link>
         </div>
       </section>
 
-      {/* 9. REDUCTION PLAN & BUDGET AUDIT */}
-      <section className="w-full border-b border-on-surface grid grid-cols-1 lg:grid-cols-12">
+      {/* 9. EXAMPLE REDUCTION IDEAS */}
+      <section className="w-full border-b border-on-surface grid grid-cols-1 lg:grid-cols-12" id="plan-preview">
         <div className="lg:col-span-6 p-space-lg md:p-space-xl border-b lg:border-b-0 lg:border-r border-on-surface bg-surface-container-lowest flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between border-b border-on-surface pb-space-sm mb-space-md">
               <div>
                 <span className="font-label-caps-sm text-label-caps-sm uppercase tracking-widest text-primary font-bold">
-                  REDUCTION ROADMAP
+                  Example ideas
                 </span>
                 <h3 className="font-headline text-headline-lg uppercase text-on-surface font-bold tracking-tight">
-                  MAKE A DENT.
+                  Small changes, real savings.
                 </h3>
               </div>
-              <div className="px-space-sm py-space-xs bg-coral-accent text-surface-container-lowest font-label-caps-md text-label-caps-md uppercase font-bold border border-on-surface">
-                TARGET: −20% BY Q4
+              <div className="px-space-sm py-space-xs bg-coral-accent text-on-surface font-label-caps-md text-label-caps-md uppercase font-bold border border-on-surface">
+                Example
               </div>
             </div>
             <p className="font-body-md text-body-md text-on-surface-variant mb-space-md">
-              Four mathematically ranked interventions tailored to your specific infrastructure bottlenecks:
+              The kind of ranked suggestions your account builds from your own numbers:
             </p>
 
             <div className="space-y-space-xs">
@@ -977,10 +908,10 @@ export default function LandingPage() {
 
           <div className="pt-space-lg">
             <Link
-              href="/reduction-plan"
-              className="w-full py-space-sm px-space-md bg-on-surface text-surface-container-lowest font-label-caps-md text-label-caps-md uppercase font-bold hover:bg-primary transition-none flex items-center justify-center"
+              href="/auth/register"
+              className="min-h-[44px] w-full py-space-sm px-space-md bg-on-surface text-surface-container-lowest font-label-caps-md text-label-caps-md uppercase font-bold hover:bg-primary transition-none flex items-center justify-center"
             >
-              CUSTOMIZE WITH OPTIMIZATION ENGINE →
+              Get ideas for my life →
             </Link>
           </div>
         </div>
@@ -999,10 +930,10 @@ export default function LandingPage() {
 
             <div className="py-space-md">
               <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
-                ANNUAL ALLOWABLE CEILING
+                Example yearly goal
               </span>
               <div className="flex items-baseline space-x-space-sm">
-                <span className="font-display text-[72px] font-bold text-on-surface leading-none">
+                <span className="font-display text-[clamp(2.75rem,9vw,4.5rem)] font-bold text-on-surface leading-none">
                   4,000
                 </span>
                 <span className="font-headline text-headline-sm uppercase font-bold text-on-surface">
@@ -1032,7 +963,7 @@ export default function LandingPage() {
             <div className="p-space-md border border-on-surface bg-surface-container-low mt-space-lg space-y-space-xs">
               <div className="flex items-center justify-between">
                 <span className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface">
-                  RUN-RATE FORECAST
+                  What this example shows
                 </span>
                 <span className="px-space-xs py-0.5 bg-primary text-on-primary font-label-caps-sm text-label-caps-sm uppercase font-bold">
                   ON TRACK
@@ -1045,22 +976,22 @@ export default function LandingPage() {
           </div>
 
           <div className="pt-space-md border-t border-on-surface flex items-center justify-between font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
-            <span>ILLUSTRATIVE PREVIEW — NOT A VERIFIED INVENTORY</span>
-            <span className="text-on-surface font-bold">NEXT RECONCILIATION: 7 DAYS</span>
+            <span>Example only — your goal is yours to set</span>
+            <span className="text-on-surface font-bold">Updated when you log</span>
           </div>
         </div>
       </section>
 
-      {/* 10. RECENT ACTIVITY DIARY & EDITORIAL INSIGHTS */}
-      <section className="w-full grid grid-cols-1 lg:grid-cols-12 border-b border-on-surface">
-        {/* Activity Diary */}
+      {/* 10. EXAMPLE DIARY & INSIGHTS */}
+      <section className="w-full grid grid-cols-1 lg:grid-cols-12 border-b border-on-surface" id="diary-preview">
+        {/* Example diary */}
         <div className="lg:col-span-6 p-space-lg md:p-space-xl border-b lg:border-b-0 lg:border-r border-on-surface bg-surface-container-lowest">
           <div className="flex items-center justify-between border-b border-on-surface pb-space-sm mb-space-md">
             <span className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface">
-              CARBON DIARY // RECENT AUDIT LEDGER
+              Example daily log
             </span>
-            <Link href="/diary" className="font-label-caps-sm text-label-caps-sm uppercase text-primary font-bold hover:underline">
-              VIEW ALL ENTRIES →
+            <Link href="/auth/register" className="min-h-[44px] inline-flex items-center font-label-caps-sm text-label-caps-sm uppercase text-primary font-bold hover:underline">
+              Start logging →
             </Link>
           </div>
 
@@ -1071,7 +1002,7 @@ export default function LandingPage() {
                 <span className="px-space-xs py-0.5 bg-surface-container border border-on-surface font-bold">TRANSPORT</span>
                 <span className="font-bold text-on-surface">COMBUSTION CAR (12 km commute)</span>
               </div>
-              <div className="font-bold text-coral-accent">+2.52 kg CO₂e</div>
+              <div className="font-bold text-error">+2.52 kg CO₂e</div>
             </div>
 
             <div className="p-space-sm bg-surface-container-lowest flex items-center justify-between">
@@ -1102,17 +1033,15 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="mt-space-md border border-on-surface p-space-xs bg-surface-container-low flex items-stretch">
-            <input
-              type="text"
-              placeholder="QUICK-LOG ACTIVITY (E.G. 'FLIGHT FRA-LHR' OR '10KM BIKE')..."
-              className="w-full px-space-sm py-1 bg-surface-container-lowest text-body-sm font-body text-on-surface focus:outline-none uppercase"
-            />
+          <div className="mt-space-md border border-on-surface p-space-md bg-surface-container-low flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+            <p className="font-body-sm text-body-sm text-on-surface-variant">
+              In your account this becomes a real daily log with estimates for everything you enter.
+            </p>
             <Link
-              href="/diary"
-              className="px-space-md py-1 bg-on-surface text-surface-container-lowest font-label-caps-sm text-label-caps-sm uppercase font-bold border-l border-on-surface hover:bg-primary transition-none whitespace-nowrap flex items-center"
+              href="/auth/register"
+              className="min-h-[44px] px-space-md py-1 bg-on-surface text-surface-container-lowest font-label-caps-sm text-label-caps-sm uppercase font-bold border-l border-on-surface hover:bg-primary transition-none whitespace-nowrap inline-flex items-center justify-center"
             >
-              LOG ENTRY
+              Start my log
             </Link>
           </div>
         </div>
@@ -1122,58 +1051,58 @@ export default function LandingPage() {
           <div>
             <div className="flex items-center justify-between border-b border-on-surface pb-space-sm mb-space-md">
               <span className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface">
-                EDITORIAL INTELLIGENCE REPORT
+                Example insights
               </span>
               <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
-                VOL. 26 // ISSUE 11
+                Illustrative
               </span>
             </div>
 
             <blockquote className="p-space-md bg-surface-container border-l-4 border-on-surface mb-space-lg">
               <p className="font-headline text-headline-md uppercase text-on-surface font-bold leading-tight">
-                &ldquo;YOUR LOWEST-CARBON WEEK IN 2026 OCCURRED MARCH 8–14: −14% BELOW YOUR ROLLING 90-DAY BASELINE.&rdquo;
+                &ldquo;An example weekly note: driving less for two weeks in a row would show up here.&rdquo;
               </p>
               <cite className="block mt-space-sm font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant not-italic font-bold">
-                — offset.io Automated Ledger Analysis Engine
+                — the kind of note your account generates from your log
               </cite>
             </blockquote>
 
             <div className="space-y-space-xs">
               <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface font-bold">
-                DATA CONFIDENCE SPREAD
+                How sure are the estimates?
               </div>
               <div className="border border-on-surface p-space-sm bg-surface-container-lowest flex items-center justify-between font-label-caps-sm text-label-caps-sm uppercase">
-                <span className="font-bold">OVERALL SIGNAL CONFIDENCE</span>
+                <span className="font-bold">Example confidence</span>
                 <span className="px-space-xs py-0.5 bg-primary text-on-primary font-bold">
-                  MEDIUM-HIGH (4.2 – 5.5 t 90% CONFIDENCE)
+                  Medium-high (range shown with every result)
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 font-label-caps-sm text-label-caps-sm uppercase">
                 <div className="p-space-xs border border-on-surface bg-surface-container-low">
-                  <div className="text-on-surface-variant font-bold">ELECTRICITY</div>
-                  <div className="font-bold text-primary mt-0.5">HIGH • API SYNC</div>
+                  <div className="text-on-surface-variant font-bold">Electricity</div>
+                  <div className="font-bold text-primary mt-0.5">Higher · bill-based</div>
                 </div>
                 <div className="p-space-xs border border-on-surface bg-surface-container-low">
-                  <div className="text-on-surface-variant font-bold">TRANSPORT</div>
-                  <div className="font-bold text-primary mt-0.5">HIGH • GPS TELEMATICS</div>
+                  <div className="text-on-surface-variant font-bold">Transport</div>
+                  <div className="font-bold text-primary mt-0.5">Higher · distance-based</div>
                 </div>
                 <div className="p-space-xs border border-on-surface bg-surface-container-low">
-                  <div className="text-on-surface-variant font-bold">FOOD / GOODS</div>
-                  <div className="font-bold text-secondary mt-0.5">MEDIUM • OCR INVOICE</div>
+                  <div className="text-on-surface-variant font-bold">Food / goods</div>
+                  <div className="font-bold text-on-surface mt-0.5">Medium · pattern-based</div>
                 </div>
               </div>
             </div>
 
             <div className="mt-space-md p-space-sm border border-on-surface bg-surface-container-lowest font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-mono">
-              <div className="text-on-surface font-bold mb-1">TRANSPARENT CALCULATION DISCLOSURE:</div>
-              <code>Illustrative formula: distance × example factor = estimated emissions</code>
+              <div className="text-on-surface font-bold mb-1">How the math works:</div>
+              <code>your amount × published factor = estimated emissions</code>
             </div>
           </div>
 
           <div className="pt-space-md border-t border-on-surface flex items-center justify-between font-label-caps-sm text-label-caps-sm uppercase text-on-surface font-bold">
-            <span>VIEW SAVED-FACTOR METADATA AFTER SIGN-IN</span>
-            <Link href="/insights" className="text-primary hover:underline">
-              DISCOVER FULL INSIGHTS →
+            <span>Every result links its sources after sign-in</span>
+            <Link href="/auth/register" className="min-h-[44px] inline-flex items-center text-primary hover:underline">
+              See my real insights →
             </Link>
           </div>
         </div>

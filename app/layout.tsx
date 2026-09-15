@@ -4,8 +4,8 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
-  title: 'offset.io — Personal Carbon Intelligence & Reduction Platform',
-  description: 'Empirical carbon accounting framework, real-time lifestyle telemetry, dynamic trajectory simulation, and budget-constrained reduction optimization.',
+  title: 'offset.io — Know your carbon footprint',
+  description: 'Estimate your personal carbon footprint from everyday travel, home energy, food, and waste — then try changes, build a plan, and track progress.',
 };
 
 export default function RootLayout({
