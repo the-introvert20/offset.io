@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [user, setUser] = useState<{ name: string; role: string; email?: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; role: string; email?: string; image?: string | null } | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -108,10 +108,20 @@ export default function Navbar() {
               <div className="flex items-center space-x-2">
                 <Link
                   href="/profile"
-                  className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold text-xs hover:opacity-90"
+                  className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold text-xs hover:opacity-90 overflow-hidden border border-on-surface"
                   title={`${user.name} (${user.role})`}
                 >
-                  {user.name.charAt(0).toUpperCase()}
+                  {user.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={user.image}
+                      alt={user.name}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    user.name.charAt(0).toUpperCase()
+                  )}
                 </Link>
                 <button
                   onClick={handleLogout}

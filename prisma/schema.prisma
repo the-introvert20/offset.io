@@ -13,7 +13,9 @@ datasource db {
 model User {
   id            String          @id @default(uuid())
   email         String          @unique
-  passwordHash  String
+  passwordHash  String?
+  googleId      String?         @unique
+  image         String?
   name          String
   role          String          @default("USER") // USER, ADMIN
   createdAt     DateTime        @default(now())

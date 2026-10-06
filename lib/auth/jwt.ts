@@ -18,6 +18,7 @@ export interface TokenPayload {
   email: string;
   role: string;
   name: string;
+  image?: string | null;
 }
 
 export async function signToken(payload: TokenPayload): Promise<string> {
@@ -39,6 +40,7 @@ export async function verifyToken(token: string): Promise<TokenPayload | null> {
       email: (payload.email as string) || '',
       role: (payload.role as string) || 'USER',
       name: (payload.name as string) || '',
+      image: (payload.image as string) || null,
     };
   } catch {
     return null;

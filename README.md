@@ -72,6 +72,7 @@ Most personal carbon footprint calculators rely on single-use, black-box questio
 | **Dual-Mode Coach** | Q&A assistant with deterministic offline rules and optional Groq LLM integration; truthful greeting, visible error replies, `aria-live` conversation, preset questions mapped to real engine branches | [`lib/engine/coach.ts`](file:///x:/offset.io/lib/engine/coach.ts), [`app/api/coach/route.ts`](file:///x:/offset.io/app/api/coach/route.ts) |
 | **Admin Factor Management** | Admin-restricted UI and API to add (with region + confidence selectors), inspect, and maintain emission factor tables; duplicate/conflict feedback | [`app/admin/page.tsx`](file:///x:/offset.io/app/admin/page.tsx), [`app/api/admin/emission-factors/route.ts`](file:///x:/offset.io/app/api/admin/emission-factors/route.ts) |
 | **Profile Currency** | Single user currency (USD/EUR/GBP/INR) applied to every money figure via a central formatter — no hardcoded symbols | [`lib/format.ts`](file:///x:/offset.io/lib/format.ts), [`app/profile/page.tsx`](file:///x:/offset.io/app/profile/page.tsx) |
+| **Google OAuth 2.0** | OpenID Connect "Continue with Google" login & signup, state token CSRF protection, account creation/linking, avatar photo sync, and session management | [`lib/auth/google.ts`](file:///x:/offset.io/lib/auth/google.ts), [`app/api/auth/google/route.ts`](file:///x:/offset.io/app/api/auth/google/route.ts), [`components/GoogleSignInButton.tsx`](file:///x:/offset.io/components/GoogleSignInButton.tsx) |
 | **Human UI & Accessibility** | Plain-language navigation (Overview, Try changes, My plan, Daily log, …); proper labels, focus rings, `prefers-reduced-motion`, dialog semantics + Escape, contrast-fixed palette, `clamp()` fluid type, 44px touch targets | [`components/Navbar.tsx`](file:///x:/offset.io/components/Navbar.tsx), [`components/Notice.tsx`](file:///x:/offset.io/components/Notice.tsx), [`components/ConfirmButton.tsx`](file:///x:/offset.io/components/ConfirmButton.tsx), [`app/globals.css`](file:///x:/offset.io/app/globals.css) |
 
 > [!NOTE]
@@ -319,8 +320,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## 🔐 Authentication & Security
 
 - **Authentication Primitive**: JSON Web Tokens (JWT) signed via [`jose`](file:///x:/offset.io/lib/auth/jwt.ts) using `HS256`.
+- **Google OAuth 2.0 / OIDC**: Official OpenID Connect authorization code flow ([`lib/auth/google.ts`](file:///x:/offset.io/lib/auth/google.ts)) with cryptographic CSRF state token verification (`offset_oauth_state` HTTP-only cookie), automatic account linking by email, user photo avatar syncing, and zero password storage.
 - **Session Transport**: Stored in `offset_session` cookie marked `HttpOnly`, `SameSite=lax`, with `Secure` flag enabled in production.
-- **Password Security**: Passwords hashed with [`bcryptjs`](file:///x:/offset.io/app/api/auth/register/route.ts) (10 salt rounds).
+- **Password Security**: Passwords hashed with [`bcryptjs`](file:///x:/offset.io/app/api/auth/register/route.ts) (10 salt rounds) for standard email credentials.
 - **Route Protection**: [`middleware.ts`](file:///x:/offset.io/middleware.ts) protects application routes while API endpoints enforce double verification via `requireAuth()` and `requireAdmin()`.
 
 ---
@@ -333,6 +335,8 @@ All API endpoints return JSON. Mutating endpoints validate payloads with **Zod**
 |---|---|---|---|---|
 | `POST` | `/api/auth/register` | Public | Create account & profile | In: `{ name, email, password, region? }` |
 | `POST` | `/api/auth/login` | Public | Authenticate user & issue JWT cookie | In: `{ email, password }` |
+| `GET` | `/api/auth/google` | Public | Initiate Google OAuth authorization flow | Redirects to Google consent screen |
+| `GET` | `/api/auth/google/callback` | Public | Handle Google OAuth callback & issue session | In: `?code=...&state=...` |
 | `POST` | `/api/auth/logout` | Session | Clear session cookie | Out: `{ success: true }` |
 | `GET` | `/api/auth/me` | Session | Retrieve current authenticated user profile | Out: `{ authenticated: true, user }` |
 | `POST` | `/api/onboarding` | Required | Set baseline questionnaire & generate audit logs | In: Onboarding survey options |
@@ -382,6 +386,9 @@ erDiagram
 |---|---|---|---|
 | `DATABASE_URL` | **Yes** | `"file:./dev.db"` | SQLite database connection string |
 | `JWT_SECRET` | **Production** | Dev Fallback | Secret key used for signing session JWTs |
+| `GOOGLE_CLIENT_ID` | Google OAuth | `""` | OAuth 2.0 Client ID from Google Cloud Console |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth | `""` | OAuth 2.0 Client Secret from Google Cloud Console |
+| `GOOGLE_REDIRECT_URI` | Google OAuth | `"http://localhost:3000/api/auth/google/callback"` | OAuth callback URI |
 | `NODE_ENV` | No | `"development"` | Environment flag (`development` \| `production`) |
 | `COACH_MODE` | No | `"local"` | Coach execution engine (`local` \| `groq`) |
 | `GROQ_API_KEY` | Groq Mode | `""` | API key required when `COACH_MODE=groq` |
@@ -390,7 +397,7 @@ erDiagram
 
 ## 🧪 Testing & Quality Assurance
 
-The codebase features **18 Vitest suites (67 tests)** covering unit domain logic, integration workflows, and the shared UI-support libraries.
+The codebase features **19 Vitest suites (80 tests)** covering unit domain logic, integration workflows, Google OAuth flows, and shared UI-support libraries.
 
 ```bash
 # Run unit and integration tests once
@@ -401,24 +408,25 @@ npm run test:watch
 ```
 
 ### Verified Test Suites
-1. [`tests/calculator.test.ts`](file:///x:/offset.io/tests/calculator.test.ts) — Annualization formula & category aggregation
-2. [`tests/uncertainty.test.ts`](file:///x:/offset.io/tests/uncertainty.test.ts) — Confidence score weighting & min/max bounds
-3. [`tests/optimizer.test.ts`](file:///x:/offset.io/tests/optimizer.test.ts) — Greedy knapsack budget optimization
-4. [`tests/anomaly.test.ts`](file:///x:/offset.io/tests/anomaly.test.ts) — Z-score spike detector thresholds
-5. [`tests/anomaly-insights.test.ts`](file:///x:/offset.io/tests/anomaly-insights.test.ts) — Anomaly insight generation
-6. [`tests/coach.test.ts`](file:///x:/offset.io/tests/coach.test.ts) — Local deterministic Q&A logic & Groq fallback
-7. [`tests/emission-factor.service.test.ts`](file:///x:/offset.io/tests/emission-factor.service.test.ts) — Factor lookup cascade & caching
-8. [`tests/footprint.service.test.ts`](file:///x:/offset.io/tests/footprint.service.test.ts) — DB footprint aggregation
-9. [`tests/scenario-crud.test.ts`](file:///x:/offset.io/tests/scenario-crud.test.ts) — Scenario persistence & user isolation
-10. [`tests/diary-crud.test.ts`](file:///x:/offset.io/tests/diary-crud.test.ts) — Diary CRUD & anomaly evaluation
-11. [`tests/goal-lifecycle.test.ts`](file:///x:/offset.io/tests/goal-lifecycle.test.ts) — Atomic active goal replacement
-12. [`tests/onboarding-transaction.test.ts`](file:///x:/offset.io/tests/onboarding-transaction.test.ts) — Questionnaire atomic transaction
-13. [`tests/dashboard-idempotency.test.ts`](file:///x:/offset.io/tests/dashboard-idempotency.test.ts) — Read-only dashboard safety
-14. [`tests/simulator.test.ts`](file:///x:/offset.io/tests/simulator.test.ts) — What-If parameter recalculation
-15. [`tests/middleware.test.ts`](file:///x:/offset.io/tests/middleware.test.ts) — Route protection & auth redirects
-16. [`tests/format.test.ts`](file:///x:/offset.io/tests/format.test.ts) — Profile-currency formatting & signed monthly deltas
-17. [`tests/diary-options.test.ts`](file:///x:/offset.io/tests/diary-options.test.ts) — Diary catalog validity, canonical diet values, legacy labels
-18. [`tests/ux-state.test.ts`](file:///x:/offset.io/tests/ux-state.test.ts) — Dashboard state classification & simulator-snapshot validation/mapping
+1. [`tests/google-auth.test.ts`](file:///x:/offset.io/tests/google-auth.test.ts) — Google OAuth utilities, CSRF state verification, authorization URL builder, user signup/login, account linking
+2. [`tests/calculator.test.ts`](file:///x:/offset.io/tests/calculator.test.ts) — Annualization formula & category aggregation
+3. [`tests/uncertainty.test.ts`](file:///x:/offset.io/tests/uncertainty.test.ts) — Confidence score weighting & min/max bounds
+4. [`tests/optimizer.test.ts`](file:///x:/offset.io/tests/optimizer.test.ts) — Greedy knapsack budget optimization
+5. [`tests/anomaly.test.ts`](file:///x:/offset.io/tests/anomaly.test.ts) — Z-score spike detector thresholds
+6. [`tests/anomaly-insights.test.ts`](file:///x:/offset.io/tests/anomaly-insights.test.ts) — Anomaly insight generation
+7. [`tests/coach.test.ts`](file:///x:/offset.io/tests/coach.test.ts) — Local deterministic Q&A logic & Groq fallback
+8. [`tests/emission-factor.service.test.ts`](file:///x:/offset.io/tests/emission-factor.service.test.ts) — Factor lookup cascade & caching
+9. [`tests/footprint.service.test.ts`](file:///x:/offset.io/tests/footprint.service.test.ts) — DB footprint aggregation
+10. [`tests/scenario-crud.test.ts`](file:///x:/offset.io/tests/scenario-crud.test.ts) — Scenario persistence & user isolation
+11. [`tests/diary-crud.test.ts`](file:///x:/offset.io/tests/diary-crud.test.ts) — Diary CRUD & anomaly evaluation
+12. [`tests/goal-lifecycle.test.ts`](file:///x:/offset.io/tests/goal-lifecycle.test.ts) — Atomic active goal replacement
+13. [`tests/onboarding-transaction.test.ts`](file:///x:/offset.io/tests/onboarding-transaction.test.ts) — Questionnaire atomic transaction
+14. [`tests/dashboard-idempotency.test.ts`](file:///x:/offset.io/tests/dashboard-idempotency.test.ts) — Read-only dashboard safety
+15. [`tests/simulator.test.ts`](file:///x:/offset.io/tests/simulator.test.ts) — What-If parameter recalculation
+16. [`tests/middleware.test.ts`](file:///x:/offset.io/tests/middleware.test.ts) — Route protection & auth redirects
+17. [`tests/format.test.ts`](file:///x:/offset.io/tests/format.test.ts) — Profile-currency formatting & signed monthly deltas
+18. [`tests/diary-options.test.ts`](file:///x:/offset.io/tests/diary-options.test.ts) — Diary catalog validity, canonical diet values, legacy labels
+19. [`tests/ux-state.test.ts`](file:///x:/offset.io/tests/ux-state.test.ts) — Dashboard state classification & simulator-snapshot validation/mapping
 
 ---
 

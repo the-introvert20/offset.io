@@ -32,6 +32,13 @@ export async function POST(req: Request) {
       );
     }
 
+    if (!user.passwordHash) {
+      return NextResponse.json(
+        { error: 'This account was created with Google Sign-In. Please sign in with Google.' },
+        { status: 400 }
+      );
+    }
+
     const isValidPassword = await bcrypt.compare(password, user.passwordHash);
     if (!isValidPassword) {
       return NextResponse.json(
@@ -45,11 +52,12 @@ export async function POST(req: Request) {
       email: user.email,
       name: user.name,
       role: user.role,
+      image: user.image,
     });
 
     const response = NextResponse.json({
       success: true,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      user: { id: user.id, email: user.email, name: user.name, role: user.role, image: user.image },
     });
 
     response.cookies.set(COOKIE_NAME, token, {

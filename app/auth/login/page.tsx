@@ -1,15 +1,48 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import GoogleSignInButton from '@/components/GoogleSignInButton';
 
-export default function LoginPage() {
+function LoginFormContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (!errorParam) return;
+
+    switch (errorParam) {
+      case 'google_not_configured':
+        setError('Google Sign-In is not configured yet. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env.');
+        break;
+      case 'cancelled':
+        setError('Google sign-in was cancelled.');
+        break;
+      case 'invalid_state':
+        setError('Authentication session expired or was invalid. Please try again.');
+        break;
+      case 'invalid_request':
+        setError('Invalid request returned during Google authentication.');
+        break;
+      case 'oauth_error':
+        setError('Google authentication failed. Please try again.');
+        break;
+      case 'profile_missing':
+        setError('Could not retrieve email information from your Google account.');
+        break;
+      case 'oauth_callback_failed':
+        setError('Failed to complete Google authentication. Please try again.');
+        break;
+      default:
+        setError('Authentication error: ' + errorParam);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,8 +121,8 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Login Form */}
-        <form onSubmit={handleSubmit} className="p-space-lg space-y-space-md bg-surface-container-lowest">
+        {/* Form Container */}
+        <div className="p-space-lg space-y-space-md bg-surface-container-lowest">
           {error && (
             <div className="border border-error bg-error/10 p-space-sm flex items-center gap-space-sm" role="alert">
               <span className="material-symbols-outlined text-error text-[18px] shrink-0" aria-hidden="true">error</span>
@@ -99,52 +132,72 @@ export default function LoginPage() {
             </div>
           )}
 
-          <div className="border border-on-surface">
-            <div className="border-b border-on-surface p-space-sm bg-surface-container-low">
-              <label htmlFor="login-email" className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant">
-                Email address
-              </label>
-            </div>
-            <input
-              id="login-email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="min-h-[44px] w-full px-space-md py-space-sm bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-low"
+          {/* Google Sign In Button */}
+          <div>
+            <GoogleSignInButton
+              label="Continue with Google"
+              redirectPath="/dashboard"
             />
           </div>
 
-          <div className="border border-on-surface">
-            <div className="border-b border-on-surface p-space-sm bg-surface-container-low">
-              <label htmlFor="login-password" className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant">
-                Password
-              </label>
-            </div>
-            <input
-              id="login-password"
-              type="password"
-              required
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="min-h-[44px] w-full px-space-md py-space-sm bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-low"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="min-h-[44px] w-full py-space-sm bg-on-surface text-surface-container-lowest font-label-caps-md text-label-caps-md uppercase font-bold border border-on-surface hover:bg-primary transition-none disabled:opacity-50 flex items-center justify-center gap-space-xs"
-          >
-            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
-              {loading ? 'hourglass_top' : 'login'}
+          {/* Divider */}
+          <div className="relative flex py-1 items-center">
+            <div className="flex-grow border-t border-on-surface/40"></div>
+            <span className="flex-shrink mx-3 font-label-caps-sm text-[11px] uppercase tracking-wider text-on-surface-variant font-bold">
+              OR SIGN IN WITH EMAIL
             </span>
-            <span>{loading ? 'Signing in…' : 'Sign in'}</span>
-          </button>
+            <div className="flex-grow border-t border-on-surface/40"></div>
+          </div>
+
+          {/* Standard Form */}
+          <form onSubmit={handleSubmit} className="space-y-space-md">
+            <div className="border border-on-surface">
+              <div className="border-b border-on-surface p-space-sm bg-surface-container-low">
+                <label htmlFor="login-email" className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant">
+                  Email address
+                </label>
+              </div>
+              <input
+                id="login-email"
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="min-h-[44px] w-full px-space-md py-space-sm bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-low"
+              />
+            </div>
+
+            <div className="border border-on-surface">
+              <div className="border-b border-on-surface p-space-sm bg-surface-container-low">
+                <label htmlFor="login-password" className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant">
+                  Password
+                </label>
+              </div>
+              <input
+                id="login-password"
+                type="password"
+                required
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="min-h-[44px] w-full px-space-md py-space-sm bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-low"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="min-h-[44px] w-full py-space-sm bg-on-surface text-surface-container-lowest font-label-caps-md text-label-caps-md uppercase font-bold border border-on-surface hover:bg-primary transition-none disabled:opacity-50 flex items-center justify-center gap-space-xs"
+            >
+              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                {loading ? 'hourglass_top' : 'login'}
+              </span>
+              <span>{loading ? 'Signing in…' : 'Sign in'}</span>
+            </button>
+          </form>
 
           <div className="pt-space-xs border-t border-on-surface flex items-center justify-between font-label-caps-sm text-label-caps-sm uppercase font-bold">
             <span className="text-on-surface-variant">New here?</span>
@@ -155,7 +208,7 @@ export default function LoginPage() {
               Create an account →
             </Link>
           </div>
-        </form>
+        </div>
 
         {/* Footer */}
         <div className="border-t border-on-surface bg-surface-container-low p-space-md">
@@ -165,5 +218,17 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="w-full min-h-[80vh] flex items-center justify-center bg-surface-container-lowest">
+        <div className="font-label-caps-md uppercase font-bold text-on-surface">Loading…</div>
+      </div>
+    }>
+      <LoginFormContent />
+    </Suspense>
   );
 }

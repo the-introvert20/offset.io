@@ -15,6 +15,8 @@ export async function GET() {
       email: true,
       name: true,
       role: true,
+      image: true,
+      googleId: true,
       profile: true,
     },
   });
@@ -23,5 +25,13 @@ export async function GET() {
     return NextResponse.json({ authenticated: false, user: null }, { status: 401 });
   }
 
-  return NextResponse.json({ authenticated: true, user });
+  const { googleId, ...userData } = user;
+
+  return NextResponse.json({
+    authenticated: true,
+    user: {
+      ...userData,
+      hasGoogleAuth: Boolean(googleId),
+    },
+  });
 }

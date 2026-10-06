@@ -8,7 +8,17 @@ export async function GET() {
     const user = await requireAuth();
     const profile = await prisma.profile.findUnique({
       where: { userId: user.userId },
-      include: { user: { select: { name: true, email: true, role: true } } },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+            role: true,
+            image: true,
+            googleId: true,
+          },
+        },
+      },
     });
     return NextResponse.json({ profile });
   } catch (error: any) {
