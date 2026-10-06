@@ -21,6 +21,8 @@ export interface CoachResponse {
   keyInsights: string[];
   suggestedAction?: string;
   source: 'LOCAL_DETERMINISTIC' | 'GROQ_AI';
+  mode: CoachMode;
+  fallbackNotice?: string;
 }
 
 type CoachMode = 'local' | 'groq';
@@ -37,7 +39,8 @@ function getGroqApiKey(): string | null {
   return key;
 }
 
-const GROQ_MODELS = ['groq/compound', 'openai/gpt-oss-120b', 'qwen/qwen3.6-27b'];
+// Active Groq production models with fast JSON support
+const GROQ_MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'];
 
 export class CarbonCoachService {
   /**
@@ -45,7 +48,8 @@ export class CarbonCoachService {
    */
   public async answerQuestion(query: string, context: CoachContext): Promise<CoachResponse> {
     const mode = getCoachMode();
-    
+    let fallbackNotice: string | undefined;
+
     // Only call Groq if explicitly configured
     if (mode === 'groq') {
       const apiKey = getGroqApiKey();
@@ -53,18 +57,26 @@ export class CarbonCoachService {
         try {
           const groqResult = await this.callGroqApi(query, context, apiKey);
           if (groqResult) {
-            return groqResult;
+            return { ...groqResult, mode: 'groq' };
           }
+          fallbackNotice = 'Groq API returned an empty or invalid response. Answered using local deterministic rules.';
         } catch (err) {
           console.warn('Groq API call failed, falling back to local deterministic coach:', err);
+          fallbackNotice = 'Groq API request failed. Answered using local deterministic rules.';
         }
       } else {
         console.warn('COACH_MODE=groq but GROQ_API_KEY not set, falling back to local coach');
+        fallbackNotice = 'GROQ_API_KEY is missing in environment. Answered using local deterministic rules.';
       }
     }
 
     // 2. Deterministic Fallback Implementation
-    return this.answerDeterministic(query, context);
+    const localResult = this.answerDeterministic(query, context);
+    return {
+      ...localResult,
+      mode,
+      fallbackNotice,
+    };
   }
 
   private async callGroqApi(query: string, context: CoachContext, apiKey: string): Promise<CoachResponse | null> {
@@ -130,6 +142,7 @@ export class CarbonCoachService {
             ],
             suggestedAction: parsed.suggestedAction || 'Review your reduction plan optimizer.',
             source: 'GROQ_AI',
+            mode: 'groq',
           };
         }
       } catch (e) {
@@ -157,6 +170,7 @@ export class CarbonCoachService {
         ],
         suggestedAction: `Focus your reduction efforts on ${largest.toLowerCase()} to get the highest ROI on your efforts.`,
         source: 'LOCAL_DETERMINISTIC',
+        mode: 'local',
       };
     }
 
@@ -175,6 +189,7 @@ export class CarbonCoachService {
           ],
           suggestedAction: 'Consider lowering your annual target by another 10% to push for net-zero living!',
           source: 'LOCAL_DETERMINISTIC',
+          mode: 'local',
         };
       }
 
@@ -187,6 +202,7 @@ export class CarbonCoachService {
         ],
         suggestedAction: 'Open the "Build My Reduction Plan" optimizer tool to generate a budget-friendly reduction strategy.',
         source: 'LOCAL_DETERMINISTIC',
+        mode: 'local',
       };
     }
 
@@ -199,6 +215,7 @@ export class CarbonCoachService {
       ],
       suggestedAction: 'Try asking: "Why is my footprint high?" or "How can I reach my carbon target?"',
       source: 'LOCAL_DETERMINISTIC',
+      mode: 'local',
     };
   }
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireAuth } from '@/lib/auth/session';
+import { prisma } from '@/lib/db';
 import { generateRecommendations } from '@/lib/engine/recommendation';
 import { optimizeReductionPlan } from '@/lib/engine/optimizer';
 import { footprintService } from '@/lib/services/footprint.service';
@@ -25,22 +26,38 @@ export async function POST(req: Request) {
 
     const { targetReductionPct, maxMonthlyBudget, forbiddenCategories, forbiddenActionKeys } = parsed.data;
 
-    const { footprint } = await footprintService.calculateUserFootprint({ userId: user.userId });
+    const [footprintResult, profile] = await Promise.all([
+      footprintService.calculateUserFootprint({ userId: user.userId }),
+      prisma.profile.findUnique({ where: { userId: user.userId }, select: { region: true, currency: true } }),
+    ]);
+
+    const { footprint } = footprintResult;
     const candidateActions = generateRecommendations({
       footprint,
       monthlyBudget: maxMonthlyBudget,
+      region: profile?.region || 'GLOBAL',
     });
+
+    const categoryTotals: Record<string, number> = {};
+    if (footprint.categoryBreakdown) {
+      for (const [cat, data] of Object.entries(footprint.categoryBreakdown)) {
+        categoryTotals[cat] = data.annualEmissionsKg;
+      }
+    }
 
     const result = optimizeReductionPlan(footprint.totalAnnualEmissionsKg, candidateActions, {
       targetReductionPct,
       maxMonthlyBudget,
       forbiddenCategories,
       forbiddenActionKeys,
+      currency: profile?.currency || 'USD',
+      categoryTotals,
     });
 
     return NextResponse.json({
       currentAnnualKg: footprint.totalAnnualEmissionsKg,
       optimization: result,
+      currency: profile?.currency || 'USD',
     });
   } catch (error: any) {
     if (error.message === 'UNAUTHORIZED') {

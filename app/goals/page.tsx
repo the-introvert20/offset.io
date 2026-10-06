@@ -76,8 +76,6 @@ export default function GoalsPage() {
     );
   }
 
-  const monthlyBudgetKg = Math.round(targetKg / 12);
-  const dailyBudgetKg = (targetKg / 365).toFixed(1);
 
   return (
     <div className="flex flex-col w-full text-on-surface bg-surface-container-lowest">
@@ -91,14 +89,16 @@ export default function GoalsPage() {
         </div>
         <div className="px-space-md py-space-xs border-b md:border-b-0 md:border-r border-on-surface flex items-center flex-1 justify-center bg-surface-container-lowest">
           <span className="font-label-caps-md text-label-caps-md uppercase tracking-wide text-on-surface">
-            Goal: {(targetKg / 1000).toFixed(2)} t CO₂e / yr • −{reductionPct}%
+            {goal
+              ? `Goal: ${(goal.targetAnnualEmissionsKg / 1000).toFixed(2)} t CO₂e / yr • −${goal.reductionPercentage}%`
+              : 'No goal set — use the form below to set one'}
           </span>
         </div>
         <div className="px-space-md py-space-xs flex items-center justify-between md:justify-end space-x-space-md bg-secondary-fixed text-on-secondary-fixed">
           <span className="font-label-caps-sm text-label-caps-sm uppercase tracking-widest font-bold">
-            {monthlyBudgetKg} kg / month
+            {goal ? `${Math.round(goal.targetAnnualEmissionsKg / 12)} kg / month` : 'No goal'}
           </span>
-          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">track_changes</span>
+          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">track_targets</span>
         </div>
       </section>
 
@@ -128,17 +128,18 @@ export default function GoalsPage() {
           </div>
         </div>
 
-        {/* Current Goal KPI Row */}
+        {/* Current Goal KPI Row — only shown when a goal exists */}
+        {goal && (
         <div className="w-full grid grid-cols-1 sm:grid-cols-3 border border-on-surface">
           <div className="p-space-md border-b sm:border-b-0 sm:border-r border-on-surface bg-surface-container-lowest">
             <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold block">
               ANNUAL TARGET CEILING
             </span>
             <div className="font-display text-4xl font-bold mt-1 text-on-surface">
-              {(targetKg / 1000).toFixed(2)} <span className="text-sm font-headline uppercase">t CO₂e</span>
+              {(goal.targetAnnualEmissionsKg / 1000).toFixed(2)} <span className="text-sm font-headline uppercase">t CO₂e</span>
             </div>
             <span className="font-label-caps-sm uppercase text-on-surface-variant font-bold">
-              {targetKg.toLocaleString()} KG GROSS
+              {goal.targetAnnualEmissionsKg.toLocaleString()} KG GROSS
             </span>
           </div>
 
@@ -147,10 +148,10 @@ export default function GoalsPage() {
               MONTHLY BUDGET
             </span>
             <div className="font-display text-4xl font-bold mt-1 text-primary">
-              {monthlyBudgetKg} <span className="text-sm font-headline uppercase">kg</span>
+              {Math.round(goal.targetAnnualEmissionsKg / 12)} <span className="text-sm font-headline uppercase">kg</span>
             </div>
             <span className="font-label-caps-sm uppercase text-on-surface-variant font-bold">
-              {dailyBudgetKg} kg per day
+              {(goal.targetAnnualEmissionsKg / 365).toFixed(1)} kg per day
             </span>
           </div>
 
@@ -159,13 +160,14 @@ export default function GoalsPage() {
               Reduction aim
             </span>
             <div className="font-display text-4xl font-bold mt-1 text-primary">
-              −{reductionPct}<span className="text-sm font-headline">%</span>
+              −{goal.reductionPercentage}<span className="text-sm font-headline">%</span>
             </div>
             <span className="font-label-caps-sm uppercase text-on-surface-variant font-bold">
               Compared with where you started
             </span>
           </div>
         </div>
+        )}
 
         {/* Two-column layout: Current Goal + Edit Form */}
         <div className="grid grid-cols-1 lg:grid-cols-12 border border-on-surface">
@@ -291,11 +293,11 @@ export default function GoalsPage() {
               <div className="border border-on-surface p-space-sm bg-surface-container-low grid grid-cols-3 gap-space-sm font-label-caps-sm text-label-caps-sm uppercase font-bold">
                 <div>
                   <div className="text-on-surface-variant">MONTHLY CAP</div>
-                  <div className="font-headline text-headline-sm text-on-surface mt-0.5">{monthlyBudgetKg} kg</div>
+                  <div className="font-headline text-headline-sm text-on-surface mt-0.5">{Math.round(targetKg / 12)} kg</div>
                 </div>
                 <div>
                   <div className="text-on-surface-variant">DAILY BUDGET</div>
-                  <div className="font-headline text-headline-sm text-on-surface mt-0.5">{dailyBudgetKg} kg</div>
+                  <div className="font-headline text-headline-sm text-on-surface mt-0.5">{(targetKg / 365).toFixed(1)} kg</div>
                 </div>
                 <div>
                   <div className="text-on-surface-variant">Yearly goal</div>
