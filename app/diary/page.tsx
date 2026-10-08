@@ -12,6 +12,7 @@ import {
   estimateDiaryEmissions,
   diaryDisplayLabels,
 } from '@/lib/diary-options';
+import { getComparisons } from '@/lib/comparisons';
 
 interface DiaryEntry {
   id: string;
@@ -37,6 +38,8 @@ export default function DiaryPage() {
   const [loadError, setLoadError] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [lastLoggedKg, setLastLoggedKg] = useState<number | null>(null);
+  const [streak, setStreak] = useState<{ current: number; longest: number } | null>(null);
 
   // Form state — category → activity → subtype pickers; unit follows automatically.
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -116,8 +119,11 @@ export default function DiaryPage() {
       });
 
       if (res.ok) {
+        const data = await res.json().catch(() => null);
         setNotes('');
         setSaveSuccess(true);
+        setLastLoggedKg(data?.entry?.emissionsKg ?? previewKg);
+        if (data?.streak) setStreak(data.streak);
         fetchDiary();
       } else {
         const data = await res.json().catch(() => null);
@@ -167,6 +173,12 @@ export default function DiaryPage() {
           <span className="font-label-caps-sm text-label-caps-sm uppercase tracking-widest font-bold">
             {entries.length} {entries.length === 1 ? 'entry' : 'entries'}
           </span>
+          {streak && streak.current > 0 && (
+            <span className="flex items-center gap-1 font-label-caps-sm text-label-caps-sm uppercase font-bold">
+              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">local_fire_department</span>
+              {streak.current} day streak
+            </span>
+          )}
         </div>
       </section>
 
@@ -224,7 +236,28 @@ export default function DiaryPage() {
             </div>
 
             {formError && <Notice tone="error">{formError}</Notice>}
-            {saveSuccess && <Notice tone="success">Activity logged — nice work keeping track.</Notice>}
+            {saveSuccess && (
+              <div className="border border-on-surface bg-surface-container-low p-space-sm space-y-space-xs">
+                <div className="flex items-center gap-space-xs">
+                  <span className="material-symbols-outlined text-primary text-[18px]" aria-hidden="true">check_circle</span>
+                  <span className="font-label-caps-sm uppercase font-bold text-on-surface">Activity logged</span>
+                  {streak && streak.current > 1 && (
+                    <span className="ml-auto font-label-caps-sm uppercase font-bold text-primary flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]" aria-hidden="true">local_fire_department</span>
+                      {streak.current} day streak
+                    </span>
+                  )}
+                </div>
+                {lastLoggedKg && lastLoggedKg > 0 && (() => {
+                  const [c] = getComparisons(lastLoggedKg, 1);
+                  return c ? (
+                    <p className="font-body-sm text-body-sm text-on-surface-variant">
+                      {c.emoji} That&apos;s {c.fullText}.
+                    </p>
+                  ) : null;
+                })()}
+              </div>
+            )}
 
             <div className="space-y-space-sm">
               <div>

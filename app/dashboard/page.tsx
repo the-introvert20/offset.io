@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { classifyDashboardResponse, type DashboardViewState } from '@/lib/dashboard-state';
 import { getUnifiedCategoryBreakdown, type UnifiedCategoryKey } from '@/lib/taxonomy';
+import { getComparisons } from '@/lib/comparisons';
 
 interface DashboardData {
   footprint: {
@@ -66,12 +67,24 @@ interface DashboardData {
     priority: string;
     category?: string;
   }[];
+  weekDelta: number | null;
+  streak: { current: number; longest: number };
+  weeklyReport: {
+    totalKg: number;
+    entriesCount: number;
+    vsGoalKg: number | null;
+    bestDay: { date: string; kg: number; category: string } | null;
+    worstDay: { date: string; kg: number; category: string } | null;
+    tip: string;
+  } | null;
 }
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [viewState, setViewState] = useState<DashboardViewState>('loading');
   const [activePulseLayer, setActivePulseLayer] = useState<'all' | UnifiedCategoryKey>('all');
+  const [unitTooltipOpen, setUnitTooltipOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
 
   const loadDashboard = () => {
     setViewState('loading');
@@ -168,7 +181,7 @@ export default function DashboardPage() {
     );
   }
 
-  const { footprint, uncertainty, goal, progress, insights, recommendations } = data;
+  const { footprint, uncertainty, goal, progress, insights, recommendations, weekDelta, streak, weeklyReport } = data;
   const unifiedBreakdown = getUnifiedCategoryBreakdown(footprint as any);
 
   const transitData = unifiedBreakdown.transport;
@@ -205,6 +218,14 @@ export default function DashboardPage() {
                 Set a goal →
               </Link>
             )}
+            {weekDelta !== null && (
+              <>
+                {' '}•{' '}
+                <span className={weekDelta > 0 ? 'text-error' : weekDelta < 0 ? 'text-primary' : 'text-on-surface'}>
+                  {weekDelta > 0 ? '+' : ''}{weekDelta}% vs last week
+                </span>
+              </>
+            )}
           </span>
         </div>
         <div className="px-space-md py-space-xs flex items-center justify-between md:justify-end space-x-space-md bg-secondary-fixed text-on-secondary-fixed">
@@ -214,6 +235,157 @@ export default function DashboardPage() {
           <span className="material-symbols-outlined text-[16px]" aria-hidden="true">verified</span>
         </div>
       </section>
+
+      {/* Streak + Weekly Report Card bar */}
+      {(streak.current > 0 || weeklyReport) && (
+        <section className="w-full bg-surface-container border-b border-on-surface flex flex-col sm:flex-row items-stretch">
+          {/* Streak badge */}
+          {streak.current > 0 && (
+            <div className="px-space-md py-space-xs flex items-center gap-space-sm border-b sm:border-b-0 sm:border-r border-on-surface bg-surface-container-lowest">
+              <span className="material-symbols-outlined text-[20px] text-primary" aria-hidden="true">local_fire_department</span>
+              <div>
+                <span className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface">
+                  {streak.current} day streak
+                </span>
+                {streak.longest > streak.current && (
+                  <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold ml-space-sm">
+                    Best: {streak.longest}
+                  </span>
+                )}
+              </div>
+              <Link
+                href="/diary"
+                className="ml-space-sm font-label-caps-sm text-label-caps-sm uppercase font-bold text-primary hover:underline"
+              >
+                Log today →
+              </Link>
+            </div>
+          )}
+
+          {/* Weekly report card trigger */}
+          {weeklyReport && (
+            <button
+              type="button"
+              onClick={() => setReportOpen(true)}
+              className="px-space-md py-space-xs flex items-center gap-space-sm bg-surface-container-lowest hover:bg-surface-container-low transition-none text-left"
+            >
+              <span className="material-symbols-outlined text-[20px] text-primary" aria-hidden="true">calendar_view_week</span>
+              <span className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface">
+                Last week: {weeklyReport.totalKg} kg
+                {weeklyReport.vsGoalKg !== null && (
+                  <span className={`ml-space-sm ${weeklyReport.vsGoalKg > 0 ? 'text-error' : 'text-primary'}`}>
+                    ({weeklyReport.vsGoalKg > 0 ? '+' : ''}{weeklyReport.vsGoalKg} kg vs goal)
+                  </span>
+                )}
+              </span>
+              <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">View report →</span>
+            </button>
+          )}
+        </section>
+      )}
+
+      {/* Weekly Report Card Modal */}
+      {reportOpen && weeklyReport && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Last week's carbon report"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-on-surface/60 p-space-md"
+          onClick={(e) => { if (e.target === e.currentTarget) setReportOpen(false); }}
+        >
+          <div className="w-full max-w-lg bg-surface-container-lowest border border-on-surface text-on-surface">
+            {/* Modal header */}
+            <div className="flex items-center justify-between border-b border-on-surface px-space-lg py-space-md">
+              <div>
+                <span className="font-label-caps-sm uppercase font-bold text-primary tracking-widest">Weekly carbon report</span>
+                <h2 className="font-headline text-headline-lg uppercase font-bold tracking-tight">Last week</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReportOpen(false)}
+                aria-label="Close report"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-surface-container transition-none"
+              >
+                <span className="material-symbols-outlined text-[22px]" aria-hidden="true">close</span>
+              </button>
+            </div>
+
+            {/* Modal body */}
+            <div className="p-space-lg space-y-space-md">
+              {/* Total */}
+              <div className="flex items-baseline gap-space-sm border-b border-on-surface pb-space-md">
+                <span className="font-display text-5xl font-bold leading-none">{weeklyReport.totalKg}</span>
+                <div className="flex flex-col">
+                  <span className="font-headline text-headline-sm uppercase font-bold">kg CO₂e</span>
+                  <span className="font-label-caps-sm uppercase text-on-surface-variant font-bold">last 7 days · {weeklyReport.entriesCount} entries logged</span>
+                </div>
+                {weeklyReport.vsGoalKg !== null && (
+                  <span className={`ml-auto font-label-caps-md uppercase font-bold px-space-sm py-0.5 border border-on-surface ${weeklyReport.vsGoalKg > 0 ? 'bg-error/10 text-error' : 'bg-primary/10 text-primary'}`}>
+                    {weeklyReport.vsGoalKg > 0 ? '+' : ''}{weeklyReport.vsGoalKg} kg vs goal
+                  </span>
+                )}
+              </div>
+
+              {/* Best / Worst */}
+              <div className="grid grid-cols-2 gap-space-sm">
+                {weeklyReport.bestDay && (
+                  <div className="border border-on-surface p-space-sm bg-surface-container-low">
+                    <div className="font-label-caps-sm uppercase font-bold text-primary mb-1">Best day</div>
+                    <div className="font-headline text-headline-sm uppercase font-bold">{weeklyReport.bestDay.kg} kg</div>
+                    <div className="font-label-caps-sm uppercase text-on-surface-variant font-bold">{weeklyReport.bestDay.category}</div>
+                    <div className="font-label-caps-sm uppercase text-on-surface-variant">{new Date(weeklyReport.bestDay.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</div>
+                  </div>
+                )}
+                {weeklyReport.worstDay && (
+                  <div className="border border-on-surface p-space-sm bg-surface-container-low">
+                    <div className="font-label-caps-sm uppercase font-bold text-error mb-1">Highest day</div>
+                    <div className="font-headline text-headline-sm uppercase font-bold">{weeklyReport.worstDay.kg} kg</div>
+                    <div className="font-label-caps-sm uppercase text-on-surface-variant font-bold">{weeklyReport.worstDay.category}</div>
+                    <div className="font-label-caps-sm uppercase text-on-surface-variant">{new Date(weeklyReport.worstDay.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</div>
+                  </div>
+                )}
+              </div>
+
+              {/* Tip */}
+              <div className="border-l-4 border-primary pl-space-md py-space-xs bg-surface-container-low">
+                <div className="font-label-caps-sm uppercase font-bold text-primary mb-0.5">This week&apos;s tip</div>
+                <p className="font-body-md text-body-md text-on-surface">{weeklyReport.tip}</p>
+              </div>
+
+              {/* Tangible comparison for weekly total */}
+              {(() => {
+                const [c] = getComparisons(weeklyReport.totalKg, 1);
+                return c ? (
+                  <div className="flex items-start gap-space-sm bg-surface-container p-space-sm border border-on-surface">
+                    <span className="text-2xl" aria-hidden="true">{c.emoji}</span>
+                    <p className="font-body-sm text-body-sm text-on-surface-variant">
+                      Your {weeklyReport.totalKg} kg last week is <strong className="text-on-surface">{c.fullText}</strong>.
+                    </p>
+                  </div>
+                ) : null;
+              })()}
+
+              {/* Actions */}
+              <div className="flex gap-space-sm pt-space-xs">
+                <Link
+                  href="/diary"
+                  onClick={() => setReportOpen(false)}
+                  className="flex-1 min-h-[44px] flex items-center justify-center bg-on-surface text-surface-container-lowest font-label-caps-md uppercase font-bold border border-on-surface hover:bg-primary transition-none"
+                >
+                  Log this week →
+                </Link>
+                <Link
+                  href="/simulator"
+                  onClick={() => setReportOpen(false)}
+                  className="flex-1 min-h-[44px] flex items-center justify-center bg-surface-container-lowest text-on-surface font-label-caps-md uppercase font-bold border border-on-surface hover:bg-surface-container-low transition-none"
+                >
+                  Try changes →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 2. THE EDITORIAL DASHBOARD SPREAD */}
       <section className="w-full border-b border-on-surface bg-surface-container-lowest">
@@ -244,6 +416,61 @@ export default function DashboardPage() {
                     <span className="font-label-caps-sm text-label-caps-sm text-on-surface-variant uppercase font-bold">
                       About {(currentTotalKg / 365).toFixed(1)} kg per day
                     </span>
+                    <span className="relative font-label-caps-sm text-label-caps-sm text-on-surface-variant font-normal normal-case mt-0.5">
+                      <button
+                        type="button"
+                        onClick={() => setUnitTooltipOpen((v) => !v)}
+                        onBlur={() => setUnitTooltipOpen(false)}
+                        aria-expanded={unitTooltipOpen}
+                        aria-label="What does t CO₂e mean?"
+                        className="border-b border-dashed border-on-surface-variant cursor-pointer focus:outline-none focus:border-primary"
+                      >
+                        t CO₂e
+                      </button>
+                      {' '}= tonnes of carbon dioxide equivalent
+                      {unitTooltipOpen && (
+                        <span
+                          role="tooltip"
+                          className="absolute left-0 top-full mt-1 z-10 w-72 bg-on-surface text-surface-container-lowest font-body-sm text-body-sm p-space-sm border border-on-surface shadow-lg normal-case"
+                        >
+                          <strong className="font-bold uppercase font-label-caps-sm block mb-1">What is t CO₂e?</strong>
+                          A tonne of CO₂ equivalent (t CO₂e) is a single unit that combines all greenhouse gases — CO₂, methane, nitrous oxide — by how much warming they cause relative to CO₂. 1 t = 1,000 kg.
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Footprint Comparison Context */}
+                <div className="mt-space-md pt-space-md border-t border-on-surface/20 space-y-space-xs">
+                  <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
+                    In plain terms
+                  </div>
+                  <div className="space-y-1 font-body-sm text-body-sm text-on-surface-variant">
+                    <div className="flex items-start gap-space-xs">
+                      <span className="text-primary">•</span>
+                      <span>
+                        Equivalent to driving about <strong className="text-on-surface">{Math.round((currentTotalKg / 0.192) / 1000).toLocaleString('en-US')} km</strong> in a petrol car
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-space-xs">
+                      <span className="text-primary">•</span>
+                      <span>
+                        The global average is <strong className="text-on-surface">4.0 t</strong>, the 1.5°C target is <strong className="text-on-surface">2.3 t</strong>
+                        {annualTonnes > 2.3 && (
+                          <> — you&apos;re <strong className="text-on-surface">{(annualTonnes - 2.3).toFixed(1)} t over</strong> target</>
+                        )}
+                        {annualTonnes <= 2.3 && (
+                          <> — you&apos;re <strong className="text-primary">on track</strong></>
+                        )}
+                      </span>
+                    </div>
+                    {getComparisons(currentTotalKg, 2).map((c, i) => (
+                      <div key={i} className="flex items-start gap-space-xs">
+                        <span aria-hidden="true">{c.emoji}</span>
+                        <span>That&apos;s <strong className="text-on-surface">{c.fullText}</strong></span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

@@ -35,9 +35,36 @@ export async function POST(req: Request) {
   try {
     const user = await requireAuth(); const parsed = entrySchema.safeParse(await req.json());
     if (!parsed.success) return NextResponse.json({ error: 'INVALID_ACTIVITY', details: parsed.error.flatten() }, { status: 400 });
-    const profile = await prisma.profile.findUnique({ where: { userId: user.userId }, select: { region: true } });
-    const entry = await prisma.diaryEntry.create({ data: { userId: user.userId, ...await toEntryData(parsed.data, profile?.region ?? 'GLOBAL') } });
-    return NextResponse.json({ entry }, { status: 201 });
+    const profile = await prisma.profile.findUnique({ where: { userId: user.userId }, select: { region: true, currentStreak: true, longestStreak: true, lastDiaryLogDate: true } });
+    const entryDate = new Date(parsed.data.date);
+    entryDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    // Calculate streak
+    let newStreak = 1;
+    const lastLog = profile?.lastDiaryLogDate ? new Date(profile.lastDiaryLogDate) : null;
+    if (lastLog) {
+      lastLog.setHours(0, 0, 0, 0);
+      if (lastLog.getTime() === yesterday.getTime() || lastLog.getTime() === today.getTime()) {
+        newStreak = (profile?.currentStreak ?? 0) + (lastLog.getTime() === today.getTime() ? 0 : 1);
+      }
+    }
+
+    const newLongest = Math.max(newStreak, profile?.longestStreak ?? 0);
+
+    // Create entry and update streak in parallel
+    const [entry] = await Promise.all([
+      prisma.diaryEntry.create({ data: { userId: user.userId, ...await toEntryData(parsed.data, profile?.region ?? 'GLOBAL') } }),
+      prisma.profile.update({
+        where: { userId: user.userId },
+        data: { currentStreak: newStreak, longestStreak: newLongest, lastDiaryLogDate: entryDate },
+      }),
+    ]);
+
+    return NextResponse.json({ entry, streak: { current: newStreak, longest: newLongest } }, { status: 201 });
   } catch (error) { if (error instanceof Error && error.message === 'UNAUTHORIZED') return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 }); return responseForError(error); }
 }
 

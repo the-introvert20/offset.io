@@ -207,6 +207,31 @@ export default function CalculatePage() {
           </p>
         </div>
 
+        {/* Units legend */}
+        <div className="border border-on-surface bg-surface-container-low p-space-md">
+          <div className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant mb-space-sm">
+            What the units mean
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-sm font-body-sm text-body-sm text-on-surface">
+            <div className="space-y-0.5">
+              <div className="font-label-caps-sm uppercase font-bold text-primary">kg CO₂e</div>
+              <div>Kilograms of CO₂ equivalent — measures any greenhouse gas by how much warming it causes compared to CO₂.</div>
+            </div>
+            <div className="space-y-0.5">
+              <div className="font-label-caps-sm uppercase font-bold text-primary">t CO₂e</div>
+              <div>Tonnes of CO₂ equivalent — same unit, 1,000× larger. Your annual total is shown in tonnes.</div>
+            </div>
+            <div className="space-y-0.5">
+              <div className="font-label-caps-sm uppercase font-bold text-primary">Emission factor</div>
+              <div>How much CO₂e is produced per unit of activity — e.g. 0.192 kg per km driven in a petrol car.</div>
+            </div>
+            <div className="space-y-0.5">
+              <div className="font-label-caps-sm uppercase font-bold text-primary">Confidence level</div>
+              <div>HIGH ±5%, MEDIUM ±15%, LOW ±30% — reflects how precisely the emission factor is known for your activity.</div>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 border border-on-surface">
           {/* Left Column: Activity List */}
           <div className="lg:col-span-5 p-space-md border-b lg:border-b-0 lg:border-r border-on-surface bg-surface-container-lowest divide-y divide-on-surface">
