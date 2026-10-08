@@ -76,7 +76,7 @@ export default function InsightsPage() {
         </div>
         <div className="px-space-md py-space-xs flex items-center justify-between md:justify-end space-x-space-md bg-secondary-fixed text-on-secondary-fixed">
           <span className="font-label-caps-sm text-label-caps-sm uppercase tracking-widest font-bold">
-            From your last 60 log entries
+            {anomalyCount > 0 ? 'From your diary log' : 'From your profile'}
           </span>
           <span className="material-symbols-outlined text-[16px]" aria-hidden="true">analytics</span>
         </div>

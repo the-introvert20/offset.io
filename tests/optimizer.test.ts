@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { optimizeReductionPlan } from '../lib/engine/optimizer';
 import { RecommendationAction } from '../lib/engine/recommendation';
 
-describe('Optimization Engine', () => {
+describe('Optimization Engine (Audit Section K.1)', () => {
   const candidateActions: RecommendationAction[] = [
     {
       id: '1',
@@ -15,9 +15,23 @@ describe('Optimization Engine', () => {
       difficulty: 'EASY',
       priority: 'HIGH',
       prerequisites: '',
+      exclusivityGroup: 'CAR_MOBILITY',
     },
     {
       id: '2',
+      actionKey: 'SWITCH_TO_EV',
+      title: 'Switch to EV',
+      explanation: 'Electric vehicle',
+      category: 'TRANSPORTATION',
+      estimatedReductionKg: 700,
+      estimatedCostMonthly: 100,
+      difficulty: 'HARD',
+      priority: 'MEDIUM',
+      prerequisites: '',
+      exclusivityGroup: 'CAR_MOBILITY',
+    },
+    {
+      id: '3',
       actionKey: 'INSTALL_SOLAR_RENEWABLE',
       title: 'Solar Panels',
       explanation: 'Install solar',
@@ -27,9 +41,10 @@ describe('Optimization Engine', () => {
       difficulty: 'MEDIUM',
       priority: 'HIGH',
       prerequisites: '',
+      exclusivityGroup: 'HOME_ELECTRICITY',
     },
     {
-      id: '3',
+      id: '4',
       actionKey: 'PLANT_BASED_DIET_SHIFT',
       title: 'Plant-Based Diet',
       explanation: 'Plant diet',
@@ -42,11 +57,16 @@ describe('Optimization Engine', () => {
     },
   ];
 
-  it('selects optimal action combination hitting 20% reduction within $50/mo budget', () => {
+  it('selects high-efficiency action combination hitting 20% reduction within budget', () => {
     const currentEmissionsKg = 4000;
     const res = optimizeReductionPlan(currentEmissionsKg, candidateActions, {
       targetReductionPct: 20, // target 800 kg reduction
       maxMonthlyBudget: 50,
+      categoryTotals: {
+        TRANSPORTATION: 1000,
+        ENERGY: 1500,
+        FOOD: 1500,
+      },
     });
 
     expect(res.isTargetAchieved).toBe(true);
@@ -63,5 +83,39 @@ describe('Optimization Engine', () => {
 
     expect(res.selectedActions.some((a) => a.actionKey === 'PLANT_BASED_DIET_SHIFT')).toBe(true);
     expect(res.totalMonthlyCost).toBeLessThanOrEqual(0);
+  });
+
+  it('enforces mutual exclusivity so competing measures are never double-counted', () => {
+    const currentEmissionsKg = 4000;
+    const res = optimizeReductionPlan(currentEmissionsKg, candidateActions, {
+      targetReductionPct: 50,
+      maxMonthlyBudget: 200,
+    });
+
+    // Should NOT select both REDUCE_CAR_TRANSIT and SWITCH_TO_EV
+    const selectedKeys = res.selectedActions.map((a) => a.actionKey);
+    const hasTransit = selectedKeys.includes('REDUCE_CAR_TRANSIT');
+    const hasEv = selectedKeys.includes('SWITCH_TO_EV');
+
+    expect(hasTransit && hasEv).toBe(false);
+  });
+
+  it('ensures selected category reductions never exceed a category’s total emissions', () => {
+    const smallTransportTotal = 300;
+    const res = optimizeReductionPlan(1000, candidateActions, {
+      targetReductionPct: 30,
+      maxMonthlyBudget: 100,
+      categoryTotals: {
+        TRANSPORTATION: smallTransportTotal, // Only 300 kg available in transport
+        ENERGY: 500,
+        FOOD: 200,
+      },
+    });
+
+    const transportReduction = res.selectedActions
+      .filter((a) => a.category === 'TRANSPORTATION')
+      .reduce((sum, a) => sum + a.estimatedReductionKg, 0);
+
+    expect(transportReduction).toBeLessThanOrEqual(smallTransportTotal);
   });
 });

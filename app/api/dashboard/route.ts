@@ -17,8 +17,8 @@ export async function GET() {
       prisma.profile.findUnique({ where: { userId: user.userId }, select: { monthlyBudget: true } }),
       prisma.diaryEntry.findMany({ where: { userId: user.userId }, orderBy: { date: 'desc' }, take: 60 }),
     ]);
-    const targetAnnualKg = goal?.targetAnnualEmissionsKg ?? 4000;
-    const progress = service.calculateProgressToTarget(calculation.footprint.totalAnnualEmissionsKg, targetAnnualKg);
+    const targetAnnualKg = goal?.targetAnnualEmissionsKg ?? null;
+    const progress = targetAnnualKg ? service.calculateProgressToTarget(calculation.footprint.totalAnnualEmissionsKg, targetAnnualKg) : null;
 
     return NextResponse.json({
       footprint: {
@@ -30,9 +30,9 @@ export async function GET() {
         })),
       },
       uncertainty: calculation.uncertainty,
-      goal: goal ?? { targetAnnualEmissionsKg: targetAnnualKg, targetMonthlyEmissionsKg: targetAnnualKg / 12, reductionPercentage: 20 },
+      goal: goal ?? null,
       progress,
-      progressPct: progress.progressPct,
+      progressPct: progress?.progressPct ?? null,
       insights: insightService.generate(calculation.footprint, targetAnnualKg, detectEmissionAnomalies(diaryEntries, ANOMALY_Z_SCORE_THRESHOLD)),
       recommendations: recommendationService.generateCurrent(calculation.footprint, profile?.monthlyBudget ?? 2000),
     });

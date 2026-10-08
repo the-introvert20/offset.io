@@ -232,6 +232,7 @@ describe('Google OAuth Callback Route (/api/auth/google/callback)', () => {
         email: 'newuser@gmail.com',
         name: 'New Google User',
         googleId: 'google-sub-12345',
+        emailVerified: true,
         image: 'https://lh3.googleusercontent.com/avatar.jpg',
         role: 'USER',
         profile: {
@@ -282,7 +283,7 @@ describe('Google OAuth Callback Route (/api/auth/google/callback)', () => {
       }),
     });
 
-    // Not found by googleId, but found by email
+    // Not found by googleId, but found by email - VERIFIED email
     vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(null); // by googleId
     vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({
       id: 'existing-user-uuid',
@@ -291,6 +292,7 @@ describe('Google OAuth Callback Route (/api/auth/google/callback)', () => {
       googleId: null,
       image: null,
       passwordHash: 'hashedpassword',
+      emailVerified: true, // Verified account - linking allowed
       role: 'USER',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -346,6 +348,7 @@ describe('Google OAuth Callback Route (/api/auth/google/callback)', () => {
       where: { id: 'existing-user-uuid' },
       data: {
         googleId: 'google-sub-99999',
+        emailVerified: true,
         image: 'https://lh3.googleusercontent.com/newpic.jpg',
         name: 'Existing User',
       },

@@ -1,0 +1,25 @@
+{
+  "projectId": "028350e3-7c1b-4fc7-acc4-7d4a64765b58",
+  "type": "frontend",
+  "name": "Onboarding flow completes all 5 steps and builds the user footprint",
+  "description": "A logged-in user without activities steps through all 5 onboarding screens (travel, home energy, food, flights, waste) and submits, then lands on the dashboard with their footprint calculated.",
+  "priority": "p0",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to /auth/login and sign in with email 'demo@offset.io' and password 'Password123!'" },
+    { "type": "action", "description": "Navigate to /onboarding" },
+    { "type": "assertion", "description": "Verify step 1 of 5 is visible with the heading 'How do you get around?' and the progress bar is shown" },
+    { "type": "action", "description": "Click the 'Yes, I drive' button to confirm having a vehicle" },
+    { "type": "action", "description": "Click the 'Petrol' fuel type button" },
+    { "type": "action", "description": "Click the 'Next' button to advance to step 2" },
+    { "type": "assertion", "description": "Verify step 2 heading 'How much power does your home use?' is shown" },
+    { "type": "action", "description": "Click the 'United States' region button" },
+    { "type": "action", "description": "Click the 'Next' button to advance to step 3" },
+    { "type": "assertion", "description": "Verify step 3 heading 'What do you usually eat?' is shown" },
+    { "type": "action", "description": "Click the 'Next' button to advance to step 4" },
+    { "type": "assertion", "description": "Verify step 4 heading 'How much do you fly?' is shown" },
+    { "type": "action", "description": "Click the 'Next' button to advance to step 5" },
+    { "type": "assertion", "description": "Verify step 5 heading 'How much do you throw away?' is shown" },
+    { "type": "action", "description": "Click the 'See my footprint →' button to submit the onboarding form" },
+    { "type": "assertion", "description": "Verify the page navigates to /dashboard and shows the 'Footprint Overview' header band with a CO₂e figure" }
+  ]
+}

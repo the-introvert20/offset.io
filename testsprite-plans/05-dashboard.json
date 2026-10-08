@@ -1,0 +1,14 @@
+{
+  "projectId": "028350e3-7c1b-4fc7-acc4-7d4a64765b58",
+  "type": "frontend",
+  "name": "Dashboard shows footprint breakdown and top recommendation for a logged-in user with activities",
+  "description": "A user who has completed onboarding lands on the dashboard and sees their annual CO₂e total, the four category breakdown bars, and a top opportunity recommendation.",
+  "priority": "p0",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to /auth/login and sign in with email 'demo@offset.io' and password 'Password123!'" },
+    { "type": "action", "description": "Navigate to /dashboard" },
+    { "type": "assertion", "description": "Verify the 'Footprint Overview' header band is visible and the annual total in tonnes CO₂e per year is displayed (a numeric value followed by 't CO₂e / year')" },
+    { "type": "assertion", "description": "Verify the 'Your breakdown' section shows four category bars for Transport, Home energy, Food, and Goods & waste, each with a percentage share" },
+    { "type": "assertion", "description": "Verify the 'Top opportunity' or 'Build a reduction plan' action area is visible in the right column of the main spread" }
+  ]
+}

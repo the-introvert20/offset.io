@@ -4,11 +4,21 @@ import { middleware } from '../middleware';
 import { signToken } from '../lib/auth/jwt';
 
 describe('Middleware Route Protection', () => {
-  it('allows public routes like landing page without token', async () => {
+  it('allows landing page without a session token', async () => {
     const req = new NextRequest('http://localhost:3000/');
     const res = await middleware(req);
     expect(res.status).toBe(200);
     expect(res.headers.get('location')).toBeNull();
+  });
+
+  it('redirects authenticated user from "/" to /dashboard (B.5)', async () => {
+    const token = await signToken({ userId: 'user-123', email: 'test@offset.io', role: 'USER', name: 'Test User' });
+    const req = new NextRequest('http://localhost:3000/', {
+      headers: { cookie: `offset_session=${token}` },
+    });
+    const res = await middleware(req);
+    expect(res.status).toBe(307);
+    expect(res.headers.get('location')).toContain('/dashboard');
   });
 
   it('allows login page without token', async () => {

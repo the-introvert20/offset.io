@@ -1,7 +1,8 @@
 /**
  * Optimization Engine for offset.io
- * "Build My Reduction Plan" Knapsack / Greedy Heuristic Algorithm.
- * Optimizes action combinations to hit carbon reduction target under budget and lifestyle constraints.
+ * "Build My Reduction Plan" Greedy Heuristic Algorithm.
+ * Prioritises action combinations by marginal cost-efficiency under budget and lifestyle constraints.
+ * (Audit Section K.1)
  */
 
 import { RecommendationAction } from './recommendation';
@@ -12,6 +13,8 @@ export interface OptimizationConstraint {
   forbiddenActionKeys?: string[];
   forbiddenCategories?: string[];
   maxDifficulty?: 'EASY' | 'MEDIUM' | 'HARD';
+  currency?: string;
+  categoryTotals?: Record<string, number>;
 }
 
 export interface OptimizationResult {
@@ -29,7 +32,8 @@ export interface OptimizationResult {
 }
 
 /**
- * Executes greedy/knapsack optimization algorithm for carbon reduction planning.
+ * Executes a greedy heuristic prioritised by carbon reduction per cost under budget constraints.
+ * Enforces mutual exclusivity across competing measures and caps category reductions to available baseline emissions.
  */
 export function optimizeReductionPlan(
   currentAnnualEmissionsKg: number,
@@ -53,9 +57,8 @@ export function optimizeReductionPlan(
     return true;
   });
 
-  // Calculate efficiency metric (kg CO2e reduction per dollar spent, handling negative costs)
+  // Calculate efficiency score (kg CO2e reduction per unit cost, highly weighting zero or negative costs)
   const scoredActions = eligible.map((action) => {
-    // If cost <= 0 (saves money or free), cost factor is extremely favorable
     const effectiveCost = action.estimatedCostMonthly <= 0 ? 0.01 : action.estimatedCostMonthly;
     const efficiencyScore = action.estimatedReductionKg / effectiveCost;
     return { action, efficiencyScore };
@@ -66,29 +69,44 @@ export function optimizeReductionPlan(
 
   const selectedActions: RecommendationAction[] = [];
   const unselectedActions: RecommendationAction[] = [];
+  const selectedExclusivityGroups = new Set<string>();
+  const categoryReductions: Record<string, number> = {};
 
   let accumulatedCost = 0;
   let accumulatedReductionKg = 0;
 
   for (const { action } of scoredActions) {
+    // 1. Exclusivity check
+    if (action.exclusivityGroup && selectedExclusivityGroups.has(action.exclusivityGroup)) {
+      unselectedActions.push(action);
+      continue;
+    }
+
+    // 2. Category emission cap check
+    const currentCatReduction = categoryReductions[action.category] || 0;
+    const catTotal = constraints.categoryTotals?.[action.category] ?? currentAnnualEmissionsKg;
+    if (currentCatReduction + action.estimatedReductionKg > catTotal * 1.0) {
+      unselectedActions.push(action);
+      continue;
+    }
+
     const nextCost = accumulatedCost + Math.max(0, action.estimatedCostMonthly);
 
-    // Check if adding this action fits in monthly budget constraint
+    // 3. Check monthly budget constraint
     if (nextCost <= constraints.maxMonthlyBudget) {
       selectedActions.push(action);
+      if (action.exclusivityGroup) {
+        selectedExclusivityGroups.add(action.exclusivityGroup);
+      }
+      categoryReductions[action.category] = currentCatReduction + action.estimatedReductionKg;
       accumulatedCost += action.estimatedCostMonthly;
       accumulatedReductionKg += action.estimatedReductionKg;
-
-      // If we met or surpassed the target, we can keep collecting negative-cost actions or stop
-      if (accumulatedReductionKg >= targetReductionKg && action.estimatedCostMonthly > 0) {
-        // Optimization stop condition for positive-cost items
-      }
     } else {
       unselectedActions.push(action);
     }
   }
 
-  // Put remaining unselected items into unselectedActions list
+  // Ensure remaining unselected items are recorded
   for (const { action } of scoredActions) {
     if (!selectedActions.includes(action) && !unselectedActions.includes(action)) {
       unselectedActions.push(action);
@@ -99,14 +117,16 @@ export function optimizeReductionPlan(
   const achievedReductionPct = currentAnnualEmissionsKg > 0 ? (accumulatedReductionKg / currentAnnualEmissionsKg) * 100 : 0;
   const isTargetAchieved = accumulatedReductionKg >= targetReductionKg;
 
+  const currencySymbol = constraints.currency === 'INR' ? '₹' : constraints.currency === 'EUR' ? '€' : constraints.currency === 'GBP' ? '£' : '$';
+
   let explanation = '';
   if (isTargetAchieved) {
-    explanation = `Successfully found an optimal combination of ${selectedActions.length} actions that achieves your target of ${constraints.targetReductionPct}% reduction while staying within your monthly budget of $${constraints.maxMonthlyBudget}.`;
+    explanation = `Selected ${selectedActions.length} high-efficiency actions achieving your target of ${constraints.targetReductionPct}% reduction within your ${currencySymbol}${constraints.maxMonthlyBudget}/mo budget.`;
   } else {
-    explanation = `With your current budget of $${constraints.maxMonthlyBudget} and active lifestyle constraints, the maximum achievable reduction is ${achievedReductionPct.toFixed(1)}% (${accumulatedReductionKg.toFixed(0)} kg CO2e/yr). Increasing your budget or relaxing constraints will allow you to hit your full ${constraints.targetReductionPct}% goal.`;
+    explanation = `With your ${currencySymbol}${constraints.maxMonthlyBudget}/mo budget and active constraints, the achievable reduction is ${achievedReductionPct.toFixed(1)}% (${Math.round(accumulatedReductionKg).toLocaleString()} kg CO₂e/yr). Increasing your budget or enabling more categories will help hit your full ${constraints.targetReductionPct}% goal.`;
   }
 
-  const algorithmNote = 'Engineered using a Bounded Greedy Knapsack Optimization Heuristic evaluating marginal CO2e reduction yield per cost dollar under linear financial and lifestyle constraints.';
+  const algorithmNote = 'Prioritised by efficiency using a greedy heuristic evaluating marginal CO₂e reduction yield per cost under budget, mutual exclusivity, and category constraints.';
 
   return {
     targetEmissionsKg: parseFloat(targetEmissionsKg.toFixed(2)),

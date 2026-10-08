@@ -6,6 +6,13 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Starting database seed...');
 
+  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DESTRUCTIVE_SEED !== 'true') {
+    throw new Error(
+      'SECURITY ERROR: Refusing to execute destructive database wipe & seed in NODE_ENV=production. ' +
+      'To intentionally seed a production database, set environment variable ALLOW_DESTRUCTIVE_SEED=true.'
+    );
+  }
+
   // Clean existing tables
   await prisma.insight.deleteMany();
   await prisma.diaryEntry.deleteMany();
@@ -314,7 +321,11 @@ async function main() {
   console.log(`✅ Seeded ${emissionFactorsData.length} emission factors.`);
 
   // 2. Seed Admin and Demo User
-  const hashedPassword = await bcrypt.hash('Password123!', 10);
+  const defaultPassword = process.env.NODE_ENV === 'production'
+    ? (process.env.ADMIN_SEED_PASSWORD || null)
+    : 'Password123!';
+
+  const hashedPassword = defaultPassword ? await bcrypt.hash(defaultPassword, 10) : null;
 
   const adminUser = await prisma.user.create({
     data: {

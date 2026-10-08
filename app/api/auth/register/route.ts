@@ -37,6 +37,8 @@ export async function POST(req: Request) {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
+    const defaultCurrency = region === 'IN' ? 'INR' : region === 'EU' ? 'EUR' : region === 'UK' ? 'GBP' : 'USD';
+
     const user = await prisma.user.create({
       data: {
         name,
@@ -50,8 +52,8 @@ export async function POST(req: Request) {
             householdSize: 1,
             primaryTransport: 'CAR_PETROL',
             targetReductionPct: 20.0,
-            monthlyBudget: 2000.0,
-            currency: 'USD',
+            monthlyBudget: defaultCurrency === 'INR' ? 2000.0 : 50.0,
+            currency: defaultCurrency,
             onboardingComplete: false,
           },
         },

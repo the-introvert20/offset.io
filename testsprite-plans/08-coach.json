@@ -1,0 +1,14 @@
+{
+  "projectId": "028350e3-7c1b-4fc7-acc4-7d4a64765b58",
+  "type": "frontend",
+  "name": "Carbon coach answers a preset question about the user's footprint",
+  "description": "A logged-in user opens the carbon coach page, clicks a preset question button, and the coach replies with an answer in the conversation area.",
+  "priority": "p1",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to /auth/login and sign in with email 'demo@offset.io' and password 'Password123!'" },
+    { "type": "action", "description": "Navigate to /coach" },
+    { "type": "assertion", "description": "Verify the 'Carbon coach' heading and the preset question buttons grid are visible, along with the initial coach greeting in the conversation area" },
+    { "type": "action", "description": "Click the 'What is my largest emission source?' preset question button" },
+    { "type": "assertion", "description": "Verify the conversation area shows a new coach response message below the user's question, and the response contains text about an emission source or footprint data" }
+  ]
+}

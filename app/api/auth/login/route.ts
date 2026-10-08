@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 import { signToken } from '@/lib/auth/jwt';
 import { COOKIE_NAME } from '@/lib/auth/session';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -12,6 +13,15 @@ const loginSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'anonymous';
+    const rateLimit = checkRateLimit(`login-${ip}`, { windowMs: 60000, maxRequests: 10 });
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: `Too many login attempts. Please wait ${rateLimit.resetSeconds} seconds before trying again.` },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const parsed = loginSchema.safeParse(body);
 

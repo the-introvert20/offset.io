@@ -4,11 +4,18 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
+interface NavGroup {
+  label: string;
+  href: string;
+  sublinks?: { href: string; label: string }[];
+}
+
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<{ name: string; role: string; email?: string; image?: string | null } | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -29,21 +36,44 @@ export default function Navbar() {
     router.push('/auth/login');
   };
 
-  const navLinks = [
+  const navGroups: NavGroup[] = [
     { href: '/dashboard', label: 'Overview' },
-    { href: '/calculate', label: "How it's calculated" },
-    { href: '/simulator', label: 'Try changes' },
-    { href: '/scenarios', label: 'Scenarios' },
-    { href: '/reduction-plan', label: 'My plan' },
-    { href: '/diary', label: 'Daily log' },
-    { href: '/insights', label: 'Insights' },
+    {
+      href: '/simulator',
+      label: 'Explore',
+      sublinks: [
+        { href: '/simulator', label: 'Try changes' },
+        { href: '/scenarios', label: 'Scenarios' },
+      ],
+    },
+    {
+      href: '/reduction-plan',
+      label: 'Plan',
+      sublinks: [
+        { href: '/reduction-plan', label: 'My plan' },
+        { href: '/goals', label: 'Goals' },
+      ],
+    },
+    {
+      href: '/diary',
+      label: 'Log',
+      sublinks: [
+        { href: '/diary', label: 'Daily log' },
+        { href: '/insights', label: 'Insights' },
+      ],
+    },
     { href: '/coach', label: 'Coach' },
-    { href: '/goals', label: 'Goals' },
   ];
 
   if (user?.role === 'ADMIN') {
-    navLinks.push({ href: '/admin', label: 'Factors (admin)' });
+    navGroups.push({ href: '/admin', label: 'Factors (admin)' });
   }
+
+  const isGroupActive = (group: NavGroup) => {
+    if (pathname === group.href) return true;
+    if (group.sublinks?.some((sub) => pathname === sub.href)) return true;
+    return false;
+  };
 
   return (
     <header className="fixed top-0 left-0 w-full z-50 bg-surface-container-lowest border-b border-on-surface">
@@ -51,39 +81,88 @@ export default function Navbar() {
         {/* Logo Cell */}
         <div className="flex items-center px-space-md border-r border-on-surface bg-surface-container-lowest shrink-0">
           <Link href="/" className="flex items-center space-x-2">
-            <span className="w-5 h-5 bg-primary inline-flex items-center justify-center text-white text-[11px] font-bold tracking-tighter">O</span>
+            <span className="w-5 h-5 bg-primary inline-flex items-center justify-center text-white text-[11px] font-bold tracking-tighter" aria-hidden="true">
+              O
+            </span>
             <span className="font-headline-sm text-headline-sm uppercase tracking-tight text-on-surface font-bold">
               offset.io
             </span>
           </Link>
         </div>
 
-        {/* Desktop Navigation Tabs */}
-        <nav className="hidden lg:flex items-stretch overflow-x-auto flex-1 bg-surface-container-lowest">
-          {navLinks.map((link) => {
-            const isActive = pathname === link.href;
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-stretch flex-1 bg-surface-container-lowest" aria-label="Main navigation">
+          {navGroups.map((group) => {
+            const active = isGroupActive(group);
+            const hasSub = group.sublinks && group.sublinks.length > 0;
+
+            if (!hasSub) {
+              return (
+                <Link
+                  key={group.href}
+                  href={group.href}
+                  className={`flex items-center px-space-md border-r border-on-surface uppercase font-label-caps-md text-label-caps-md whitespace-nowrap transition-none select-none ${
+                    active
+                      ? 'bg-on-surface text-surface-container-lowest font-bold'
+                      : 'text-on-surface hover:bg-surface-container-high'
+                  }`}
+                >
+                  {group.label}
+                </Link>
+              );
+            }
+
             return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`flex items-center px-space-md border-r border-on-surface uppercase font-label-caps-md text-label-caps-md whitespace-nowrap transition-none select-none ${
-                  isActive
-                    ? 'bg-on-surface text-surface-container-lowest font-bold'
-                    : 'text-on-surface hover:bg-on-surface hover:text-surface-container-lowest'
-                }`}
+              <div
+                key={group.label}
+                className="relative flex items-stretch border-r border-on-surface"
+                onMouseEnter={() => setOpenGroup(group.label)}
+                onMouseLeave={() => setOpenGroup(null)}
               >
-                {link.label}
-              </Link>
+                <Link
+                  href={group.href}
+                  className={`flex items-center gap-1 px-space-md uppercase font-label-caps-md text-label-caps-md whitespace-nowrap transition-none select-none ${
+                    active
+                      ? 'bg-on-surface text-surface-container-lowest font-bold'
+                      : 'text-on-surface hover:bg-surface-container-high'
+                  }`}
+                >
+                  <span>{group.label}</span>
+                  <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
+                    arrow_drop_down
+                  </span>
+                </Link>
+
+                {openGroup === group.label && (
+                  <div className="absolute top-14 left-0 min-w-[160px] bg-surface-container-lowest border border-on-surface shadow-md divide-y divide-on-surface z-50">
+                    {group.sublinks!.map((sub) => (
+                      <Link
+                        key={sub.href}
+                        href={sub.href}
+                        onClick={() => setOpenGroup(null)}
+                        className={`block px-space-md py-space-sm uppercase font-label-caps-sm text-label-caps-sm whitespace-nowrap transition-none ${
+                          pathname === sub.href
+                            ? 'bg-on-surface text-surface-container-lowest font-bold'
+                            : 'text-on-surface hover:bg-surface-container-high'
+                        }`}
+                      >
+                        {sub.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>
 
         {/* Mobile Hamburger Trigger */}
-        <div className="flex lg:hidden flex-1 items-center justify-end px-space-sm border-r border-on-surface">
+        <div className="flex md:hidden flex-1 items-center justify-end px-space-sm border-r border-on-surface">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-on-surface hover:bg-surface-container flex items-center justify-center border border-on-surface"
-            aria-label="Toggle Menu"
+            className="min-h-[44px] min-w-[44px] p-2 text-on-surface hover:bg-surface-container flex items-center justify-center border border-on-surface"
+            aria-label="Toggle navigation menu"
+            aria-expanded={mobileMenuOpen}
           >
             <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
               {mobileMenuOpen ? 'close' : 'menu'}
@@ -96,7 +175,7 @@ export default function Navbar() {
           <div className="flex items-center px-space-md border-l border-on-surface bg-surface-container-lowest">
             <Link
               href="/diary"
-              className="px-space-md py-space-xs bg-on-surface text-surface-container-lowest font-label-caps-md text-label-caps-md uppercase border border-on-surface hover:bg-primary hover:text-on-primary transition-none font-bold whitespace-nowrap"
+              className="min-h-[36px] inline-flex items-center px-space-md py-space-xs bg-on-surface text-surface-container-lowest font-label-caps-md text-label-caps-md uppercase border border-on-surface hover:bg-primary hover:text-on-primary transition-none font-bold whitespace-nowrap"
             >
               Log activity
             </Link>
@@ -125,7 +204,7 @@ export default function Navbar() {
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="min-h-[44px] text-[11px] uppercase font-label font-bold text-on-surface-variant hover:text-error ml-1"
+                  className="min-h-[44px] inline-flex items-center px-space-xs font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant hover:text-error transition-none"
                   title="Sign out"
                 >
                   Sign out
@@ -143,24 +222,41 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-on-surface bg-surface-container-lowest divide-y divide-on-surface">
-          <div className="grid grid-cols-2">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
+        <div className="md:hidden border-t border-on-surface bg-surface-container-lowest divide-y divide-on-surface max-h-[calc(100vh-56px)] overflow-y-auto">
+          <div className="p-space-md space-y-space-md">
+            {navGroups.map((group) => {
+              const active = isGroupActive(group);
               return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`p-space-md uppercase font-label-caps-md text-label-caps-md border-r border-b border-on-surface flex items-center justify-between ${
-                    isActive ? 'bg-on-surface text-surface-container-lowest font-bold' : 'text-on-surface'
-                  }`}
-                >
-                  <span>{link.label}</span>
-                  <span className="material-symbols-outlined text-[16px]" aria-hidden="true">arrow_forward</span>
-                </Link>
+                <div key={group.label} className="border border-on-surface">
+                  <Link
+                    href={group.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`min-h-[44px] p-space-md uppercase font-label-caps-md text-label-caps-md flex items-center justify-between border-b border-on-surface last:border-b-0 ${
+                      active ? 'bg-on-surface text-surface-container-lowest font-bold' : 'bg-surface-container-low text-on-surface'
+                    }`}
+                  >
+                    <span>{group.label}</span>
+                    <span className="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span>
+                  </Link>
+                  {group.sublinks && (
+                    <div className="grid grid-cols-2 divide-x divide-on-surface bg-surface-container-lowest">
+                      {group.sublinks.map((sub) => (
+                        <Link
+                          key={sub.href}
+                          href={sub.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={`min-h-[44px] p-space-sm uppercase font-label-caps-sm text-label-caps-sm flex items-center justify-between ${
+                            pathname === sub.href ? 'bg-on-surface text-surface-container-lowest font-bold' : 'text-on-surface hover:bg-surface-container-high'
+                          }`}
+                        >
+                          <span>{sub.label}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>

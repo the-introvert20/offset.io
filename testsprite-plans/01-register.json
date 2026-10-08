@@ -1,0 +1,16 @@
+{
+  "projectId": "028350e3-7c1b-4fc7-acc4-7d4a64765b58",
+  "type": "frontend",
+  "name": "User registration creates an account and redirects to onboarding",
+  "description": "A new visitor fills in name, email, password, and region on the register page, submits the form, and is redirected to the onboarding flow.",
+  "priority": "p0",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to /auth/register" },
+    { "type": "action", "description": "Type a unique name into the 'Your name' field" },
+    { "type": "action", "description": "Type a unique test email address into the 'Email address' field" },
+    { "type": "action", "description": "Type a password of at least 6 characters into the 'Password' field" },
+    { "type": "action", "description": "Select the 'United States (EPA eGRID)' region button" },
+    { "type": "action", "description": "Click the 'Create account →' button" },
+    { "type": "assertion", "description": "Verify the page navigates to /onboarding and shows the heading 'Set up your footprint' or 'How do you get around?'" }
+  ]
+}

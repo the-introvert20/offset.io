@@ -39,6 +39,9 @@ function LoginFormContent() {
       case 'oauth_callback_failed':
         setError('Failed to complete Google authentication. Please try again.');
         break;
+      case 'unverified_account':
+        setError('This email is registered but not verified. Please sign in with your password first. (Email verification required to link accounts.)');
+        break;
       default:
         setError('Authentication error: ' + errorParam);
     }
@@ -70,9 +73,13 @@ function LoginFormContent() {
     }
   };
 
+  const showDemoLogin =
+    process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN === 'true' &&
+    process.env.NODE_ENV !== 'production';
+
   const fillDemoUser = (userEmail: string) => {
     setEmail(userEmail);
-    setPassword('Password123!');
+    // Password must be entered manually to avoid embedding credentials in client bundle
   };
 
   return (
@@ -96,30 +103,24 @@ function LoginFormContent() {
           </div>
         </div>
 
-        {/* Quick Demo Credentials */}
-        <div className="border-b border-on-surface bg-surface-container p-space-md">
-          <div className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant mb-space-sm">
-            Try the demo (fills the form for you)
+        {/* Quick Demo Credentials - Development Only when explicit flag is enabled */}
+        {showDemoLogin && (
+          <div className="border-b border-on-surface bg-surface-container p-space-md">
+            <div className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant mb-space-sm">
+              Try the demo (development only)
+            </div>
+            <div>
+              <button
+                type="button"
+                onClick={() => fillDemoUser('demo@offset.io')}
+                className="w-full p-space-sm border border-on-surface bg-surface-container-lowest text-left hover:bg-on-surface hover:text-surface-container-lowest transition-none"
+              >
+                <div className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-inherit">DEMO ACCOUNT</div>
+                <div className="font-body-sm text-[11px] text-on-surface-variant mt-0.5">demo@offset.io</div>
+              </button>
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-1">
-            <button
-              type="button"
-              onClick={() => fillDemoUser('demo@offset.io')}
-              className="p-space-sm border border-on-surface bg-surface-container-lowest text-left hover:bg-on-surface hover:text-surface-container-lowest transition-none"
-            >
-              <div className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-inherit">DEMO ACCOUNT</div>
-              <div className="font-body-sm text-[11px] text-on-surface-variant mt-0.5">demo@offset.io</div>
-            </button>
-            <button
-              type="button"
-              onClick={() => fillDemoUser('admin@offset.io')}
-              className="p-space-sm border border-on-surface bg-surface-container-lowest text-left hover:bg-on-surface hover:text-surface-container-lowest transition-none"
-            >
-              <div className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-inherit">ADMIN ACCOUNT</div>
-              <div className="font-body-sm text-[11px] text-on-surface-variant mt-0.5">admin@offset.io</div>
-            </button>
-          </div>
-        </div>
+        )}
 
         {/* Form Container */}
         <div className="p-space-lg space-y-space-md bg-surface-container-lowest">
@@ -207,6 +208,10 @@ function LoginFormContent() {
             >
               Create an account →
             </Link>
+          </div>
+
+          <div className="pt-space-sm text-center font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
+            Forgot your password? Contact support or create a new account.
           </div>
         </div>
 

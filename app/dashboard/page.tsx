@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { classifyDashboardResponse, type DashboardViewState } from '@/lib/dashboard-state';
+import { getUnifiedCategoryBreakdown, type UnifiedCategoryKey } from '@/lib/taxonomy';
 
 interface DashboardData {
   footprint: {
@@ -33,19 +34,21 @@ interface DashboardData {
     maxAnnualTonnes: number;
     confidenceScorePct: number;
     explanation: string;
+    isIncomplete?: boolean;
+    missingCategories?: string[];
   };
   goal: {
     targetAnnualEmissionsKg: number;
     targetMonthlyEmissionsKg: number;
     reductionPercentage: number;
-  };
-  progressPct: number;
+  } | null;
+  progressPct: number | null;
   progress: {
     progressPct: number;
     isOverTarget: boolean;
     kgDifference: number;
     status: 'under' | 'at' | 'over';
-  };
+  } | null;
   insights: {
     id: string;
     title: string;
@@ -68,7 +71,7 @@ interface DashboardData {
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [viewState, setViewState] = useState<DashboardViewState>('loading');
-  const [activePulseLayer, setActivePulseLayer] = useState<'all' | 'transit' | 'energy' | 'diet' | 'goods'>('all');
+  const [activePulseLayer, setActivePulseLayer] = useState<'all' | UnifiedCategoryKey>('all');
 
   const loadDashboard = () => {
     setViewState('loading');
@@ -166,20 +169,20 @@ export default function DashboardPage() {
   }
 
   const { footprint, uncertainty, goal, progress, insights, recommendations } = data;
-  const breakdown = footprint.categoryBreakdown || {};
+  const unifiedBreakdown = getUnifiedCategoryBreakdown(footprint as any);
 
-  // Only real data — a category with no activities shows 0, never a placeholder.
-  const transitData = breakdown.TRANSPORTATION || { annualEmissionsKg: 0, percentage: 0 };
-  const energyData = breakdown.ENERGY || { annualEmissionsKg: 0, percentage: 0 };
-  const foodData = breakdown.FOOD || { annualEmissionsKg: 0, percentage: 0 };
-  const goodsData = breakdown.CONSUMPTION || breakdown.WASTE || { annualEmissionsKg: 0, percentage: 0 };
+  const transitData = unifiedBreakdown.transport;
+  const energyData = unifiedBreakdown.energy;
+  const foodData = unifiedBreakdown.food;
+  const goodsData = unifiedBreakdown.goods;
 
   const topRec = recommendations && recommendations.length > 0 ? recommendations[0] : null;
 
   const annualTonnes = footprint.totalAnnualEmissionsTonnes;
-  const targetCapKg = goal?.targetAnnualEmissionsKg ?? 4000;
   const currentTotalKg = footprint.totalAnnualEmissionsKg;
-  const targetTonnes = (targetCapKg / 1000).toFixed(2);
+  const hasGoal = Boolean(goal && goal.targetAnnualEmissionsKg > 0);
+  const targetCapKg = goal?.targetAnnualEmissionsKg ?? null;
+  const targetTonnes = targetCapKg ? (targetCapKg / 1000).toFixed(2) : null;
   const activityCount = footprint.calculations?.length ?? 0;
 
   return (
@@ -189,12 +192,19 @@ export default function DashboardPage() {
         <div className="px-space-md py-space-xs border-b md:border-b-0 md:border-r border-on-surface flex items-center space-x-space-sm bg-surface-container-lowest">
           <span className="w-2.5 h-2.5 bg-primary animate-pulse" aria-hidden="true"></span>
           <span className="font-label-caps-md text-label-caps-md uppercase tracking-wider text-on-surface font-bold">
-            Your footprint · updates when your activities change
+            Footprint Overview
           </span>
         </div>
         <div className="px-space-md py-space-xs border-b md:border-b-0 md:border-r border-on-surface flex items-center flex-1 justify-center bg-surface-container-lowest">
           <span className="font-label-caps-md text-label-caps-md uppercase tracking-wide text-on-surface">
-            <span className="text-primary font-bold">{annualTonnes} t CO₂e / yr</span> • Goal: &lt; {targetTonnes} t CO₂e
+            <span className="text-primary font-bold">{annualTonnes} t CO₂e / yr</span> • Goal:{' '}
+            {hasGoal ? (
+              <span>&lt; {targetTonnes} t CO₂e</span>
+            ) : (
+              <Link href="/goals" className="text-primary hover:underline font-bold">
+                Set a goal →
+              </Link>
+            )}
           </span>
         </div>
         <div className="px-space-md py-space-xs flex items-center justify-between md:justify-end space-x-space-md bg-secondary-fixed text-on-secondary-fixed">
@@ -241,13 +251,17 @@ export default function DashboardPage() {
 
             <div className="pt-space-md border-t border-on-surface flex flex-wrap items-center justify-between gap-space-sm">
               <div className="inline-flex items-center space-x-space-xs px-space-sm py-space-xs bg-surface-container border border-on-surface">
-                <span className="material-symbols-outlined text-primary text-[18px]" aria-hidden="true">trending_down</span>
+                <span className="material-symbols-outlined text-primary text-[18px]" aria-hidden="true">
+                  {hasGoal ? 'trending_down' : 'flag'}
+                </span>
                 <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface font-bold">
-                  {progress?.status === 'over'
-                    ? `${Math.round(progress.kgDifference)} kg over your goal`
-                    : progress?.status === 'at'
-                      ? 'Right on your goal'
-                      : `${Math.round(progress?.kgDifference ?? 0)} kg under your goal`}
+                  {hasGoal && progress
+                    ? progress.status === 'over'
+                      ? `${Math.round(progress.kgDifference)} kg over your goal`
+                      : progress.status === 'at'
+                        ? 'Right on your goal'
+                        : `${Math.round(progress.kgDifference)} kg under your goal`
+                    : 'No target goal set yet'}
                 </span>
               </div>
               <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
@@ -256,16 +270,16 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Box 2 (5 cols): Top suggestion */}
-          <div className="lg:col-span-5 bg-coral-accent text-on-surface p-space-lg md:p-space-xl flex flex-col justify-between border-b lg:border-b-0">
+          {/* Box 2 (5 cols): Top suggestion - Neutral/editorial styled */}
+          <div className="lg:col-span-5 bg-surface-container text-on-surface p-space-lg md:p-space-xl flex flex-col justify-between border-b lg:border-b-0">
             {topRec ? (
               <>
                 <div className="space-y-space-sm">
                   <div className="flex items-center justify-between">
                     <span className="font-label-caps-md text-label-caps-md uppercase tracking-wider px-space-xs py-0.5 bg-surface-container-lowest text-on-surface border border-on-surface font-bold">
-                      Biggest opportunity
+                      Top opportunity
                     </span>
-                    <span className="material-symbols-outlined text-[24px]" aria-hidden="true">crisis_alert</span>
+                    <span className="material-symbols-outlined text-[24px] text-primary" aria-hidden="true">crisis_alert</span>
                   </div>
                   <div className="pt-space-md">
                     <h2 className="font-headline text-headline-xl uppercase font-bold leading-tight tracking-tight mt-1">
@@ -273,14 +287,14 @@ export default function DashboardPage() {
                     </h2>
                   </div>
                   <div className="py-space-sm flex items-baseline space-x-space-xs">
-                    <span className="font-display text-[clamp(2.5rem,6vw,3.5rem)] font-bold leading-none">
+                    <span className="font-display text-[clamp(2.5rem,6vw,3.5rem)] font-bold leading-none text-primary">
                       −{Math.round(topRec.estimatedReductionKg / 12)}
                     </span>
                     <span className="font-headline text-headline-sm uppercase font-bold">
                       kg CO₂e / month
                     </span>
                   </div>
-                  <p className="font-body-md text-body-md leading-snug">
+                  <p className="font-body-md text-body-md leading-snug text-on-surface-variant">
                     {topRec.explanation}
                   </p>
                 </div>
@@ -288,7 +302,7 @@ export default function DashboardPage() {
                 <div className="pt-space-lg">
                   <Link
                     href="/reduction-plan"
-                    className="min-h-[44px] w-full py-space-sm px-space-md bg-surface-container-lowest text-on-surface border border-on-surface font-label-caps-md text-label-caps-md uppercase font-bold hover:bg-on-surface hover:text-surface-container-lowest transition-none flex items-center justify-between"
+                    className="min-h-[44px] w-full py-space-sm px-space-md bg-on-surface text-surface-container-lowest border border-on-surface font-label-caps-md text-label-caps-md uppercase font-bold hover:bg-primary transition-none flex items-center justify-between"
                   >
                     <span>Build a reduction plan</span>
                     <span className="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span>
@@ -303,13 +317,13 @@ export default function DashboardPage() {
                 <h2 className="font-headline text-headline-xl uppercase font-bold leading-tight tracking-tight pt-space-md">
                   No big reductions left to suggest
                 </h2>
-                <p className="font-body-md text-body-md leading-snug">
+                <p className="font-body-md text-body-md leading-snug text-on-surface-variant">
                   Your footprint is already low across every category. Keep logging daily activities to hold this level.
                 </p>
                 <div className="pt-space-lg">
                   <Link
                     href="/diary"
-                    className="min-h-[44px] w-full py-space-sm px-space-md bg-surface-container-lowest text-on-surface border border-on-surface font-label-caps-md text-label-caps-md uppercase font-bold hover:bg-on-surface hover:text-surface-container-lowest transition-none flex items-center justify-between"
+                    className="min-h-[44px] w-full py-space-sm px-space-md bg-on-surface text-surface-container-lowest border border-on-surface font-label-caps-md text-label-caps-md uppercase font-bold hover:bg-primary transition-none flex items-center justify-between"
                   >
                     <span>Log today&apos;s activities</span>
                     <span className="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span>
@@ -336,10 +350,10 @@ export default function DashboardPage() {
             <div className="flex flex-wrap items-center gap-1" role="group" aria-label="Highlight a category in the chart">
               {[
                 { key: 'all' as const, label: 'All' },
-                { key: 'transit' as const, label: `Transport (${transitData.percentage.toFixed(0)}%)` },
-                { key: 'energy' as const, label: `Energy (${energyData.percentage.toFixed(0)}%)` },
-                { key: 'diet' as const, label: `Food (${foodData.percentage.toFixed(0)}%)` },
-                { key: 'goods' as const, label: `Goods (${goodsData.percentage.toFixed(0)}%)` },
+                { key: 'transport' as const, label: `Transport (${transitData.percentage.toFixed(0)}%)` },
+                { key: 'energy' as const, label: `Home energy (${energyData.percentage.toFixed(0)}%)` },
+                { key: 'food' as const, label: `Food (${foodData.percentage.toFixed(0)}%)` },
+                { key: 'goods' as const, label: `Goods & waste (${goodsData.percentage.toFixed(0)}%)` },
               ].map((layer) => (
                 <button
                   key={layer.key}
@@ -358,27 +372,33 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 border border-on-surface">
-            {/* Category rings chart (decorative — values are listed beside it) */}
+            {/* Visual breakdown diagram */}
             <div className="lg:col-span-6 p-space-lg border-b lg:border-b-0 lg:border-r border-on-surface bg-surface-container-low flex flex-col items-center justify-center relative min-h-[340px]">
-              <svg className="w-full max-w-[320px] h-auto text-on-surface" fill="none" viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Chart showing your footprint split across transport, energy, food, and goods">
+              <svg className="w-full max-w-[320px] h-auto text-on-surface" fill="none" viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Chart showing footprint split across transport, home energy, food, and goods and waste">
                 <line stroke="currentColor" strokeDasharray="2 3" strokeWidth="1" x1="0" x2="340" y1="170" y2="170"></line>
                 <line stroke="currentColor" strokeDasharray="2 3" strokeWidth="1" x1="170" x2="170" y1="0" y2="340"></line>
-                <circle cx="170" cy="170" fill="none" r="50" stroke="#001fce" strokeDasharray="4 4" strokeWidth="2"></circle>
-                <text fill="#001fce" fontFamily="'Space Grotesk', sans-serif" fontSize="8" fontWeight="700" x="175" y="116">
-                  Your goal: {targetTonnes}t
-                </text>
+                
+                {hasGoal && (
+                  <>
+                    <circle cx="170" cy="170" fill="none" r="50" stroke="#001fce" strokeDasharray="4 4" strokeWidth="2"></circle>
+                    <text fill="#001fce" fontFamily="'Space Grotesk', sans-serif" fontSize="8" fontWeight="700" x="175" y="112">
+                      Goal: {targetTonnes}t
+                    </text>
+                  </>
+                )}
+
                 <circle cx="170" cy="170" fill="none" r="85" stroke="#1c1b1b" strokeWidth="1"></circle>
                 <circle cx="170" cy="170" fill="none" r="120" stroke="#1c1b1b" strokeWidth="1"></circle>
                 <circle cx="170" cy="170" fill="none" r="155" stroke="#1c1b1b" strokeDasharray="3 3" strokeWidth="1"></circle>
 
-                {/* Layer Arcs */}
-                {(activePulseLayer === 'all' || activePulseLayer === 'transit') && (
+                {/* Layer Arcs with real data */}
+                {(activePulseLayer === 'all' || activePulseLayer === 'transport') && (
                   <path d="M 170,30 A 140,140 0 0,1 306.8,200.7" fill="none" stroke="#00B2FE" strokeWidth="12"></path>
                 )}
                 {(activePulseLayer === 'all' || activePulseLayer === 'energy') && (
                   <path d="M 306.8,200.7 A 140,140 0 0,1 199.1,306.9" fill="none" stroke="#001fce" strokeWidth="12"></path>
                 )}
-                {(activePulseLayer === 'all' || activePulseLayer === 'diet') && (
+                {(activePulseLayer === 'all' || activePulseLayer === 'food') && (
                   <path d="M 199.1,306.9 A 140,140 0 0,1 78.4,275.6" fill="none" stroke="#FF5938" strokeWidth="12"></path>
                 )}
                 {(activePulseLayer === 'all' || activePulseLayer === 'goods') && (
@@ -453,7 +473,7 @@ export default function DashboardPage() {
               </div>
 
               <div className="mt-space-md pt-space-sm border-t border-on-surface flex items-center justify-between font-label-caps-sm text-label-caps-sm uppercase text-on-surface font-bold">
-                <span>Total: {Math.round(currentTotalKg).toLocaleString('en-US')} kg CO₂e</span>
+                <span>Total: {Math.round(currentTotalKg).toLocaleString('en-US')} kg CO₂e (100.0%)</span>
                 <Link href="/calculate" className="min-h-[44px] inline-flex items-center text-primary hover:underline">
                   How we calculate this →
                 </Link>
@@ -468,13 +488,13 @@ export default function DashboardPage() {
             <div>
               <div className="w-full h-1.5 bg-cyan-accent mb-space-sm border border-on-surface"></div>
               <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">SECTOR 01</span>
-              <h3 className="font-headline text-headline-sm uppercase text-on-surface font-bold mt-1">TRANSPORTATION</h3>
+              <h3 className="font-headline text-headline-sm uppercase text-on-surface font-bold mt-1">TRANSPORT</h3>
               <div className="my-space-md">
                 <div className="font-display text-headline-xl text-on-surface font-bold leading-none">{Math.round(transitData.annualEmissionsKg)}</div>
                 <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">kg CO₂e • {transitData.percentage.toFixed(1)}% SHARE</div>
               </div>
               <p className="font-body-sm text-body-sm text-on-surface leading-normal">
-                Dominant parameter in your profile. Direct combustion &amp; public mobility.
+                Direct vehicle travel, flights, and public mobility.
               </p>
             </div>
             <div className="pt-space-md mt-space-md border-t border-on-surface flex items-center justify-between">
@@ -489,18 +509,18 @@ export default function DashboardPage() {
             <div>
               <div className="w-full h-1.5 bg-primary mb-space-sm border border-on-surface"></div>
               <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">SECTOR 02</span>
-              <h3 className="font-headline text-headline-sm uppercase text-on-surface font-bold mt-1">ENERGY &amp; UTILITIES</h3>
+              <h3 className="font-headline text-headline-sm uppercase text-on-surface font-bold mt-1">HOME ENERGY</h3>
               <div className="my-space-md">
                 <div className="font-display text-headline-xl text-on-surface font-bold leading-none">{Math.round(energyData.annualEmissionsKg)}</div>
                 <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">kg CO₂e • {energyData.percentage.toFixed(1)}% SHARE</div>
               </div>
               <p className="font-body-sm text-body-sm text-on-surface leading-normal">
-                Grid electricity load &amp; residential thermal baseline heating.
+                Grid electricity load and residential thermal baseline power.
               </p>
             </div>
             <div className="pt-space-md mt-space-md border-t border-on-surface flex items-center justify-between">
               <Link href="/simulator" className="font-label-caps-sm text-label-caps-sm uppercase text-primary font-bold hover:underline">
-                SIMULATE THERMOSTAT →
+                SIMULATE SOLAR →
               </Link>
               <span className="material-symbols-outlined text-[18px]" aria-hidden="true">bolt</span>
             </div>
@@ -510,13 +530,13 @@ export default function DashboardPage() {
             <div>
               <div className="w-full h-1.5 bg-coral-accent mb-space-sm border border-on-surface"></div>
               <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">SECTOR 03</span>
-              <h3 className="font-headline text-headline-sm uppercase text-on-surface font-bold mt-1">FOOD &amp; DIET</h3>
+              <h3 className="font-headline text-headline-sm uppercase text-on-surface font-bold mt-1">FOOD</h3>
               <div className="my-space-md">
                 <div className="font-display text-headline-xl text-on-surface font-bold leading-none">{Math.round(foodData.annualEmissionsKg)}</div>
                 <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">kg CO₂e • {foodData.percentage.toFixed(1)}% SHARE</div>
               </div>
               <p className="font-body-sm text-body-sm text-on-surface leading-normal">
-                Dietary protein split &amp; regional agricultural supply chain.
+                Dietary protein patterns and agricultural supply chain footprint.
               </p>
             </div>
             <div className="pt-space-md mt-space-md border-t border-on-surface flex items-center justify-between">
@@ -531,13 +551,13 @@ export default function DashboardPage() {
             <div>
               <div className="w-full h-1.5 bg-yellow-accent mb-space-sm border border-on-surface"></div>
               <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">SECTOR 04</span>
-              <h3 className="font-headline text-headline-sm uppercase text-on-surface font-bold mt-1">GOODS &amp; SERVICES</h3>
+              <h3 className="font-headline text-headline-sm uppercase text-on-surface font-bold mt-1">GOODS &amp; WASTE</h3>
               <div className="my-space-md">
                 <div className="font-display text-headline-xl text-on-surface font-bold leading-none">{Math.round(goodsData.annualEmissionsKg)}</div>
                 <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">kg CO₂e • {goodsData.percentage.toFixed(1)}% SHARE</div>
               </div>
               <p className="font-body-sm text-body-sm text-on-surface leading-normal">
-                Amortized lifecycle hardware, goods, apparel, and municipal services.
+                Municipal landfill waste, recycling diversion, and consumer goods.
               </p>
             </div>
             <div className="pt-space-md mt-space-md border-t border-on-surface flex items-center justify-between">
@@ -560,73 +580,97 @@ export default function DashboardPage() {
                 Your goal progress
               </span>
               <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface font-bold">
-                {progress?.status === 'over' ? 'Over goal' : 'On track'}
+                {hasGoal ? (progress?.status === 'over' ? 'Over goal' : 'On track') : 'No goal set'}
               </span>
             </div>
 
-            <div className="py-space-md">
-              <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
-                Your yearly goal
-              </span>
-              <div className="flex items-baseline space-x-space-sm">
-                <span className="font-display text-[clamp(2.75rem,9vw,4.5rem)] font-bold text-on-surface leading-none">
-                  {Math.round(targetCapKg).toLocaleString('en-US')}
-                </span>
-                <span className="font-headline text-headline-sm uppercase font-bold text-on-surface">
-                  kg CO₂e
-                </span>
-              </div>
-            </div>
-
-            {/* Segmented Heavy Bar */}
-            <div className="space-y-space-xs my-space-md">
-              <div className="w-full h-10 border border-on-surface flex">
-                <div
-                  className="h-full bg-on-surface flex items-center justify-center text-surface-container-lowest font-label-caps-sm text-label-caps-sm font-bold truncate px-2"
-                  style={{ width: `${Math.min(100, Math.round((currentTotalKg / targetCapKg) * 100))}%` }}
-                >
-                  {Math.round(currentTotalKg)} kg ({Math.round((currentTotalKg / targetCapKg) * 100)}%)
-                </div>
-                {targetCapKg > currentTotalKg && (
-                  <div
-                    className="h-full bg-yellow-accent flex items-center justify-center text-on-surface font-label-caps-sm text-label-caps-sm font-bold truncate px-2"
-                    style={{ width: `${100 - Math.min(100, Math.round((currentTotalKg / targetCapKg) * 100))}%` }}
-                  >
-                    {Math.round(targetCapKg - currentTotalKg)} kg LEFT
+            {hasGoal && targetCapKg ? (
+              <>
+                <div className="py-space-md">
+                  <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
+                    Your yearly goal
+                  </span>
+                  <div className="flex items-baseline space-x-space-sm">
+                    <span className="font-display text-[clamp(2.75rem,9vw,4.5rem)] font-bold text-on-surface leading-none">
+                      {Math.round(targetCapKg).toLocaleString('en-US')}
+                    </span>
+                    <span className="font-headline text-headline-sm uppercase font-bold text-on-surface">
+                      kg CO₂e
+                    </span>
                   </div>
-                )}
-              </div>
-              <div className="flex justify-between font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
-                <span>0 kg</span>
-                <span className="text-on-surface font-bold">{Math.round(currentTotalKg).toLocaleString('en-US')} kg used</span>
-                <span>{Math.round(targetCapKg).toLocaleString('en-US')} kg goal</span>
-              </div>
-            </div>
+                </div>
 
-            <div className="p-space-md border border-on-surface bg-surface-container-low mt-space-lg space-y-space-xs">
-              <div className="flex items-center justify-between">
-                <span className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface">
-                  What this means
+                {/* Segmented Heavy Bar */}
+                <div className="space-y-space-xs my-space-md">
+                  <div className="w-full h-10 border border-on-surface flex">
+                    <div
+                      className="h-full bg-on-surface flex items-center justify-center text-surface-container-lowest font-label-caps-sm text-label-caps-sm font-bold truncate px-2"
+                      style={{ width: `${Math.min(100, Math.round((currentTotalKg / targetCapKg) * 100))}%` }}
+                    >
+                      {Math.round(currentTotalKg)} kg ({Math.round((currentTotalKg / targetCapKg) * 100)}%)
+                    </div>
+                    {targetCapKg > currentTotalKg && (
+                      <div
+                        className="h-full bg-yellow-accent flex items-center justify-center text-on-surface font-label-caps-sm text-label-caps-sm font-bold truncate px-2"
+                        style={{ width: `${100 - Math.min(100, Math.round((currentTotalKg / targetCapKg) * 100))}%` }}
+                      >
+                        {Math.round(targetCapKg - currentTotalKg)} kg LEFT
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex justify-between font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
+                    <span>0 kg</span>
+                    <span className="text-on-surface font-bold">{Math.round(currentTotalKg).toLocaleString('en-US')} kg used</span>
+                    <span>{Math.round(targetCapKg).toLocaleString('en-US')} kg goal</span>
+                  </div>
+                </div>
+
+                <div className="p-space-md border border-on-surface bg-surface-container-low mt-space-lg space-y-space-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface">
+                      What this means
+                    </span>
+                    <span className={`px-space-xs py-0.5 font-label-caps-sm text-label-caps-sm uppercase font-bold ${
+                      currentTotalKg <= targetCapKg ? 'bg-primary text-on-primary' : 'bg-coral-accent text-on-surface'
+                    }`}>
+                      {currentTotalKg <= targetCapKg ? 'On track' : 'Over goal'}
+                    </span>
+                  </div>
+                  <p className="font-body-md text-body-md text-on-surface leading-relaxed">
+                    Your current pace lands at <strong className="text-primary font-bold">{Math.round(currentTotalKg).toLocaleString('en-US')} kg CO₂e</strong>.
+                    {currentTotalKg <= targetCapKg
+                      ? ` That's ${Math.round(targetCapKg - currentTotalKg).toLocaleString('en-US')} kg under your goal.`
+                      : ` That's ${Math.round(currentTotalKg - targetCapKg).toLocaleString('en-US')} kg over your goal — a reduction plan can help close the gap.`}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="py-space-xl text-center space-y-space-sm">
+                <span className="material-symbols-outlined text-[36px] text-on-surface-variant block" aria-hidden="true">
+                  track_changes
                 </span>
-                <span className={`px-space-xs py-0.5 font-label-caps-sm text-label-caps-sm uppercase font-bold ${
-                  currentTotalKg <= targetCapKg ? 'bg-primary text-on-primary' : 'bg-coral-accent text-on-surface'
-                }`}>
-                  {currentTotalKg <= targetCapKg ? 'On track' : 'Over goal'}
-                </span>
+                <div className="font-headline text-headline-md uppercase font-bold">
+                  No Goal Set Yet
+                </div>
+                <p className="font-body-md text-on-surface-variant max-w-sm mx-auto">
+                  Set a carbon reduction ceiling to measure progress across your daily log and reduction plan.
+                </p>
+                <div className="pt-space-md">
+                  <Link
+                    href="/goals"
+                    className="inline-block min-h-[44px] px-space-md py-space-sm bg-on-surface text-surface-container-lowest font-label-caps-md uppercase font-bold border border-on-surface hover:bg-primary"
+                  >
+                    Set a yearly goal →
+                  </Link>
+                </div>
               </div>
-              <p className="font-body-md text-body-md text-on-surface leading-relaxed">
-                Your current pace lands at <strong className="text-primary font-bold">{Math.round(currentTotalKg).toLocaleString('en-US')} kg CO₂e</strong>.
-                {currentTotalKg <= targetCapKg
-                  ? ` That's ${Math.round(targetCapKg - currentTotalKg).toLocaleString('en-US')} kg under your goal.`
-                  : ` That's ${Math.round(currentTotalKg - targetCapKg).toLocaleString('en-US')} kg over your goal — a reduction plan can help close the gap.`}
-              </p>
-            </div>
+            )}
           </div>
 
           <div className="pt-space-md border-t border-on-surface flex items-center justify-between font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
             <span>Goal updates everywhere automatically</span>
             <Link href="/goals" className="min-h-[44px] inline-flex items-center text-primary hover:underline">
-              Change my goal →
+              {hasGoal ? 'Change my goal →' : 'Set a goal →'}
             </Link>
           </div>
         </div>

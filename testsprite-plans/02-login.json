@@ -1,0 +1,15 @@
+{
+  "projectId": "028350e3-7c1b-4fc7-acc4-7d4a64765b58",
+  "type": "frontend",
+  "name": "User login with email and password redirects to dashboard",
+  "description": "An existing user enters their email and password on the login page, submits the form, and lands on the dashboard showing their footprint.",
+  "priority": "p0",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to /auth/login" },
+    { "type": "assertion", "description": "Verify the login panel heading 'Welcome back' and the email input field are visible" },
+    { "type": "action", "description": "Type 'demo@offset.io' into the 'Email address' input field" },
+    { "type": "action", "description": "Type 'Password123!' into the 'Password' input field" },
+    { "type": "action", "description": "Click the 'Sign in' button" },
+    { "type": "assertion", "description": "Verify the page navigates to /dashboard and shows 'Footprint Overview' in the header band or the 'Let's set up your footprint' empty-state heading" }
+  ]
+}

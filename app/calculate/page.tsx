@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Notice from '@/components/Notice';
 
 interface SingleCalc {
   activityId?: string;
@@ -32,6 +33,14 @@ export default function CalculatePage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedCalc, setSelectedCalc] = useState<SingleCalc | null>(null);
+  // K.2: edit/delete state
+  const [deletingId, setDeletingId] = useState<string | null>(null);   // activityId pending confirm
+  const [deletingBusy, setDeletingBusy] = useState(false);
+  const [mutateError, setMutateError] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);      // activityId being quantity-edited
+  const [editQty, setEditQty] = useState('');
+  const [editBusy, setEditBusy] = useState(false);
+  const editInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch('/api/dashboard')
@@ -57,6 +66,76 @@ export default function CalculatePage() {
         setLoading(false);
       });
   }, []);
+  const reloadCalculations = () => {
+    fetch('/api/dashboard')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((d) => {
+        if (d?.footprint?.calculations) {
+          setCalculations(d.footprint.calculations);
+          setSelectedCalc((prev) =>
+            d.footprint.calculations.find((c: SingleCalc) => c.activityId === prev?.activityId) ??
+            d.footprint.calculations[0] ?? null
+          );
+        }
+      })
+      .catch(() => {/* silent refresh failure — data shown may be stale */});
+  };
+
+  const handleDelete = async (activityId: string) => {
+    setDeletingBusy(true);
+    setMutateError(null);
+    try {
+      const res = await fetch(`/api/activities/${activityId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error(await res.text());
+      setDeletingId(null);
+      reloadCalculations();
+    } catch {
+      setMutateError('Couldn\'t delete that activity. Check your connection and try again.');
+    } finally {
+      setDeletingBusy(false);
+    }
+  };
+
+  const startEdit = (calc: SingleCalc) => {
+    if (!calc.activityId) return;
+    setEditingId(calc.activityId);
+    setEditQty(String(calc.quantity));
+    setMutateError(null);
+    setTimeout(() => editInputRef.current?.focus(), 50);
+  };
+
+  const handleSaveEdit = async (activityId: string) => {
+    const qty = parseFloat(editQty);
+    if (isNaN(qty) || qty < 0) {
+      setMutateError('Quantity must be a non-negative number.');
+      return;
+    }
+    setEditBusy(true);
+    setMutateError(null);
+    try {
+      const res = await fetch(`/api/activities/${activityId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity: qty }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? 'UPDATE_FAILED');
+      }
+      setEditingId(null);
+      reloadCalculations();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'UPDATE_FAILED';
+      setMutateError(
+        msg === 'EMISSION_FACTOR_NOT_FOUND'
+          ? 'No emission factor found for that combination. Check the subtype and unit.'
+          : 'Couldn\'t save that change. Check your connection and try again.'
+      );
+    } finally {
+      setEditBusy(false);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -138,34 +217,140 @@ export default function CalculatePage() {
               </Link>
             </div>
 
+            {mutateError && (
+              <div className="mb-space-xs">
+                <Notice tone="error">{mutateError}</Notice>
+              </div>
+            )}
+
             {calculations.length > 0 ? (
-              calculations.map((calc, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setSelectedCalc(calc)}
-                  aria-pressed={selectedCalc === calc}
-                  className={`min-h-[44px] w-full text-left p-space-sm border-l-4 transition-none flex flex-col justify-between ${
-                    selectedCalc === calc
-                      ? 'border-primary bg-primary-fixed text-on-primary-fixed font-bold'
-                      : 'border-transparent hover:bg-surface-container-low text-on-surface'
-                  }`}
-                >
-                  <div className="flex justify-between items-center font-label-caps-sm uppercase font-bold mb-1">
-                    <span className="text-primary">{calc.category}</span>
-                    <span className="px-space-xs py-0.5 border border-on-surface bg-surface-container-lowest font-mono">
-                      {calc.confidenceLevel} confidence
-                    </span>
+              calculations.map((calc, idx) => {
+                const aid = calc.activityId;
+                const isEditing = aid && editingId === aid;
+                const isDeleting = aid && deletingId === aid;
+                const isSelected = selectedCalc === calc;
+
+                return (
+                  <div
+                    key={idx}
+                    className={`border-l-4 transition-none ${
+                      isSelected ? 'border-primary' : 'border-transparent'
+                    }`}
+                  >
+                    {/* Main row — click selects for detail view */}
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedCalc(calc); setDeletingId(null); setEditingId(null); }}
+                      aria-pressed={isSelected}
+                      className={`min-h-[44px] w-full text-left p-space-sm flex flex-col justify-between transition-none ${
+                        isSelected
+                          ? 'bg-primary-fixed text-on-primary-fixed font-bold'
+                          : 'hover:bg-surface-container-low text-on-surface'
+                      }`}
+                    >
+                      <div className="flex justify-between items-center font-label-caps-sm uppercase font-bold mb-1">
+                        <span className="text-primary">{calc.category}</span>
+                        <span className="px-space-xs py-0.5 border border-on-surface bg-surface-container-lowest font-mono">
+                          {calc.confidenceLevel} confidence
+                        </span>
+                      </div>
+                      <div className="font-headline text-headline-sm uppercase font-bold">
+                        {calc.activityType} ({calc.subtype})
+                      </div>
+                      <div className="font-label-caps-sm uppercase text-on-surface-variant pt-1 flex justify-between">
+                        <span>{calc.quantity} {calc.unit} / {calc.frequency.toLowerCase()}</span>
+                        <span className="font-bold text-on-surface">{Math.round(calc.annualEmissionsKg)} kg CO₂e/yr</span>
+                      </div>
+                    </button>
+
+                    {/* Action bar — only shown when row is selected and has an activityId */}
+                    {isSelected && aid && (
+                      <div className="px-space-sm pb-space-xs bg-primary-fixed border-t border-on-surface">
+                        {isEditing ? (
+                          /* Inline quantity editor */
+                          <div className="flex items-center gap-space-xs pt-space-xs">
+                            <label htmlFor={`qty-${aid}`} className="font-label-caps-sm uppercase font-bold text-on-surface shrink-0">
+                              Qty:
+                            </label>
+                            <input
+                              id={`qty-${aid}`}
+                              ref={editInputRef}
+                              type="number"
+                              min="0"
+                              step="any"
+                              value={editQty}
+                              onChange={(e) => setEditQty(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleSaveEdit(aid);
+                                if (e.key === 'Escape') setEditingId(null);
+                              }}
+                              className="w-24 border border-on-surface px-space-xs py-0.5 font-mono text-sm bg-surface-container-lowest text-on-surface"
+                            />
+                            <span className="font-label-caps-sm uppercase text-on-surface-variant font-bold">{calc.unit}</span>
+                            <button
+                              type="button"
+                              disabled={editBusy}
+                              onClick={() => handleSaveEdit(aid)}
+                              className="min-h-[32px] px-space-sm bg-on-surface text-surface-container-lowest font-label-caps-sm uppercase font-bold border border-on-surface hover:bg-primary disabled:opacity-50 transition-none"
+                            >
+                              {editBusy ? '…' : 'Save'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => { setEditingId(null); setMutateError(null); }}
+                              className="min-h-[32px] px-space-sm bg-surface-container-lowest text-on-surface font-label-caps-sm uppercase font-bold border border-on-surface hover:bg-surface-container-high transition-none"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : isDeleting ? (
+                          /* Delete confirmation */
+                          <div className="flex items-center gap-space-xs pt-space-xs font-label-caps-sm uppercase font-bold">
+                            <span className="text-error text-on-surface">Delete this activity?</span>
+                            <button
+                              type="button"
+                              disabled={deletingBusy}
+                              onClick={() => handleDelete(aid)}
+                              className="min-h-[32px] px-space-sm bg-error text-on-error font-label-caps-sm uppercase font-bold border border-on-surface hover:opacity-90 disabled:opacity-50 transition-none"
+                            >
+                              {deletingBusy ? '…' : 'Yes, delete'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => { setDeletingId(null); setMutateError(null); }}
+                              className="min-h-[32px] px-space-sm bg-surface-container-lowest text-on-surface font-label-caps-sm uppercase font-bold border border-on-surface hover:bg-surface-container-high transition-none"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          /* Normal action buttons */
+                          <div className="flex items-center gap-space-xs pt-space-xs">
+                            <button
+                              type="button"
+                              onClick={() => startEdit(calc)}
+                              className="min-h-[32px] inline-flex items-center gap-1 px-space-sm bg-surface-container-lowest text-on-surface font-label-caps-sm uppercase font-bold border border-on-surface hover:bg-surface-container-high transition-none"
+                              aria-label="Edit quantity"
+                            >
+                              <span className="material-symbols-outlined text-[14px]" aria-hidden="true">edit</span>
+                              Edit qty
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => { setDeletingId(aid); setMutateError(null); }}
+                              className="min-h-[32px] inline-flex items-center gap-1 px-space-sm bg-surface-container-lowest text-on-surface font-label-caps-sm uppercase font-bold border border-on-surface hover:bg-error hover:text-on-error transition-none"
+                              aria-label="Delete this activity"
+                            >
+                              <span className="material-symbols-outlined text-[14px]" aria-hidden="true">delete</span>
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <div className="font-headline text-headline-sm uppercase font-bold">
-                    {calc.activityType} ({calc.subtype})
-                  </div>
-                  <div className="font-label-caps-sm uppercase text-on-surface-variant pt-1 flex justify-between">
-                    <span>{calc.quantity} {calc.unit} / {calc.frequency.toLowerCase()}</span>
-                    <span className="font-bold text-on-surface">{Math.round(calc.annualEmissionsKg)} kg CO₂e/yr</span>
-                  </div>
-                </button>
-              ))
+                );
+              })
             ) : (
               <div className="p-space-lg text-center space-y-space-md">
                 <p className="font-body-md text-on-surface-variant">No activities yet — set up your footprint to see the math here.</p>

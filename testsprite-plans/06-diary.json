@@ -1,0 +1,16 @@
+{
+  "projectId": "028350e3-7c1b-4fc7-acc4-7d4a64765b58",
+  "type": "frontend",
+  "name": "Diary page logs an activity entry and shows it in the entries list",
+  "description": "A logged-in user navigates to the daily log, selects a Transportation/Car/Petrol activity with a quantity of 20, submits the form, and the new entry appears in the entries list.",
+  "priority": "p1",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to /auth/login and sign in with email 'demo@offset.io' and password 'Password123!'" },
+    { "type": "action", "description": "Navigate to /diary" },
+    { "type": "assertion", "description": "Verify the 'Daily log' page heading and the 'Log something you did' form panel are visible" },
+    { "type": "action", "description": "Select 'TRANSPORTATION' in the 'What kind of activity?' category dropdown" },
+    { "type": "action", "description": "Set the quantity input to 20" },
+    { "type": "action", "description": "Click the 'Log activity' button to submit the form" },
+    { "type": "assertion", "description": "Verify a success notice 'Activity logged' appears, or the entries list in the right panel now contains a new entry row showing a CO₂e value" }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "projectId": "028350e3-7c1b-4fc7-acc4-7d4a64765b58",
+  "type": "frontend",
+  "name": "Goals page sets a yearly target and confirms it is saved",
+  "description": "A logged-in user opens the goals page, adjusts the yearly target slider, and saves the goal. The saved goal figure is then reflected in the current goal panel.",
+  "priority": "p1",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to /auth/login and sign in with email 'demo@offset.io' and password 'Password123!'" },
+    { "type": "action", "description": "Navigate to /goals" },
+    { "type": "assertion", "description": "Verify the 'Goals' page heading and the 'Change my goal' form panel are visible" },
+    { "type": "action", "description": "Click the 'Save goal →' button to save the currently displayed goal values" },
+    { "type": "assertion", "description": "Verify the button changes to 'Goal saved' and the current goal panel on the left updates to show an annual target figure in t CO₂e" }
+  ]
+}

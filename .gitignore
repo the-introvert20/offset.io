@@ -21,3 +21,13 @@ Thumbs.db
 .idea/
 # Playwright CLI output (may contain credentials)
 .playwright-cli/
+
+# Personal / generated files
+Completion Certificate _ SkillsBuild.pdf
+demo-ss.pdf
+offset-io-presentation.pptx
+uttam_rawat_offset-io.pptx
+COMPREHENSIVE_AUDIT_REPORT.md
+FINAL_VERIFICATION_REPORT.md
+VERIFICATION_REPORT.md
+.playwright/

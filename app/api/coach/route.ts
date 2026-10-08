@@ -6,6 +6,7 @@ import { carbonCoachService } from '@/lib/engine/coach';
 import { footprintService } from '@/lib/services/footprint.service';
 import { EmissionFactorNotFoundError } from '@/lib/services/emission-factor.service';
 import { detectEmissionAnomalies, ANOMALY_Z_SCORE_THRESHOLD } from '@/lib/engine/anomaly';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 const coachSchema = z.object({
   query: z.string().min(1),
@@ -14,6 +15,15 @@ const coachSchema = z.object({
 export async function POST(req: Request) {
   try {
     const user = await requireAuth();
+
+    const rateLimit = checkRateLimit(`coach-${user.userId}`, { windowMs: 60000, maxRequests: 20 });
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: `Too many questions in a short period. Please wait ${rateLimit.resetSeconds} seconds before asking again.` },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const parsed = coachSchema.safeParse(body);
 

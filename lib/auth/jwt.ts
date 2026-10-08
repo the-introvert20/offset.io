@@ -3,8 +3,8 @@ import { SignJWT, jwtVerify } from 'jose';
 function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('JWT_SECRET environment variable is required in production');
+    if (process.env.NODE_ENV !== 'development') {
+      throw new Error('JWT_SECRET environment variable is required in all non-development environments');
     }
     return 'default-dev-secret-key-offset-io-minimum-32-chars';
   }

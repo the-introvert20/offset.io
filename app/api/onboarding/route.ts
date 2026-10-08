@@ -33,9 +33,17 @@ export async function POST(req: Request) {
     const calculationResult = await footprintService.calculateFootprintFromActivities(activities);
 
     await prisma.$transaction(async (tx) => {
+      const existingProfile = await tx.profile.findUnique({ where: { userId: user.userId } });
+      const defaultCurrency = input.region === 'IN' ? 'INR' : input.region === 'EU' ? 'EUR' : input.region === 'UK' ? 'GBP' : 'USD';
+
       await tx.profile.update({
         where: { userId: user.userId },
-        data: { region: input.region, dietPattern: input.dietPattern, onboardingComplete: true },
+        data: {
+          region: input.region,
+          dietPattern: input.dietPattern,
+          onboardingComplete: true,
+          currency: existingProfile?.onboardingComplete ? existingProfile.currency : defaultCurrency,
+        },
       });
       await tx.activity.deleteMany({ where: { userId: user.userId } });
       await tx.activity.createMany({

@@ -72,6 +72,15 @@ export async function GET(req: NextRequest) {
       return response;
     }
 
+    if (!googleUser.email_verified) {
+      console.warn('Google account email is not verified:', googleUser.email);
+      const loginUrl = new URL('/auth/login', req.url);
+      loginUrl.searchParams.set('error', 'unverified_google_email');
+      const response = NextResponse.redirect(loginUrl);
+      response.cookies.delete(OAUTH_STATE_COOKIE_NAME);
+      return response;
+    }
+
     const email = googleUser.email.toLowerCase().trim();
     const googleId = googleUser.sub;
     const name = googleUser.name?.trim() || email.split('@')[0];
@@ -93,11 +102,22 @@ export async function GET(req: NextRequest) {
       });
 
       if (existingByEmail) {
+        // PRE-HIJACKING PROTECTION: Block linking if the existing account's email is unverified
+        if (!existingByEmail.emailVerified) {
+          console.warn('Attempted OAuth link to unverified password account:', email);
+          const loginUrl = new URL('/auth/login', req.url);
+          loginUrl.searchParams.set('error', 'unverified_account');
+          const response = NextResponse.redirect(loginUrl);
+          response.cookies.delete(OAUTH_STATE_COOKIE_NAME);
+          return response;
+        }
+
         // Link Google ID and update image if missing
         user = await prisma.user.update({
           where: { id: existingByEmail.id },
           data: {
             googleId,
+            emailVerified: true, // Google OAuth confirms email
             image: existingByEmail.image || image,
             name: existingByEmail.name || name,
           },
@@ -111,6 +131,7 @@ export async function GET(req: NextRequest) {
             email,
             name,
             googleId,
+            emailVerified: true, // Google OAuth confirms email
             image,
             role: 'USER',
             profile: {

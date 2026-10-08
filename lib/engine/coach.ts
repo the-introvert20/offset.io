@@ -39,8 +39,8 @@ function getGroqApiKey(): string | null {
   return key;
 }
 
-// Active Groq production models with fast JSON support
-const GROQ_MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'];
+// Active Groq production model
+const GROQ_MODELS = ['openai/gpt-oss-120b'];
 
 export class CarbonCoachService {
   /**
@@ -155,65 +155,149 @@ export class CarbonCoachService {
 
   private answerDeterministic(query: string, context: CoachContext): CoachResponse {
     const qLower = query.toLowerCase();
+    const { footprint, uncertainty, targetAnnualKg, userName, scenariosCount, recentAnomalyCount } = context;
+    const gap = footprint.totalAnnualEmissionsKg - targetAnnualKg;
+    const gapTonnes = (gap / 1000).toFixed(2);
+    const largest = footprint.largestCategory;
+    const largestData = footprint.categoryBreakdown[largest];
+    const pct = largestData ? largestData.percentage.toFixed(1) : '0';
 
-    if (qLower.includes('why') || qLower.includes('high') || qLower.includes('biggest source') || qLower.includes('largest')) {
-      const largest = context.footprint.largestCategory;
-      const largestData = context.footprint.categoryBreakdown[largest];
-      const pct = largestData ? largestData.percentage.toFixed(1) : '0';
-
+    // Largest source / why high
+    if (qLower.includes('why') || qLower.includes('high') || qLower.includes('biggest') || qLower.includes('largest') || qLower.includes('source')) {
       return {
-        answer: `Hi ${context.userName}, your estimated annual carbon footprint is ${context.footprint.totalAnnualEmissionsTonnes} t CO2e/year (${context.uncertainty.overallConfidence} confidence range: ${context.uncertainty.minAnnualTonnes}–${context.uncertainty.maxAnnualTonnes} t). Your single largest emission driver is **${largest}**, accounting for **${pct}%** (${largestData?.annualEmissionsKg.toFixed(0)} kg CO2e/year) of your overall footprint.`,
+        answer: `Your largest emission driver is **${largest}**, accounting for **${pct}%** (${largestData?.annualEmissionsKg.toFixed(0)} kg CO2e/year) of your ${footprint.totalAnnualEmissionsTonnes} t CO2e annual total. That single category has more leverage than anything else you can change right now.`,
         keyInsights: [
-          `Largest category: ${largest} (${pct}% of total footprint)`,
-          `Confidence level: ${context.uncertainty.overallConfidence} (${context.uncertainty.confidenceScorePct}% score)`,
-          `Annual Total: ${context.footprint.totalAnnualEmissionsKg} kg CO2e`,
+          `Largest category: ${largest} at ${pct}% of total`,
+          `Annual total: ${footprint.totalAnnualEmissionsTonnes} t CO2e (${uncertainty.overallConfidence} confidence)`,
+          `Confidence range: ${uncertainty.minAnnualTonnes}–${uncertainty.maxAnnualTonnes} t CO2e/yr`,
         ],
-        suggestedAction: `Focus your reduction efforts on ${largest.toLowerCase()} to get the highest ROI on your efforts.`,
+        suggestedAction: `Open the Reduction Plan and focus cuts on ${largest.toLowerCase()} first for the highest ROI.`,
         source: 'LOCAL_DETERMINISTIC',
         mode: 'local',
       };
     }
 
-    if (qLower.includes('target') || qLower.includes('reach') || qLower.includes('reduce') || qLower.includes('budget')) {
-      const gap = context.footprint.totalAnnualEmissionsKg - context.targetAnnualKg;
-      const gapTonnes = (gap / 1000).toFixed(2);
-      const isOver = gap > 0;
-
-      if (!isOver) {
+    // Target / budget / how far over
+    if (qLower.includes('target') || qLower.includes('reach') || qLower.includes('budget') || qLower.includes('over') || qLower.includes('far')) {
+      if (gap <= 0) {
         return {
-          answer: `Great news ${context.userName}! Your current estimated footprint of ${context.footprint.totalAnnualEmissionsTonnes} t CO2e is already below your annual target of ${(context.targetAnnualKg / 1000).toFixed(2)} t CO2e. You are on track to meet your sustainability goals.`,
+          answer: `Good news, ${userName} — your estimated footprint of ${footprint.totalAnnualEmissionsTonnes} t CO2e is already **${Math.abs(gap).toFixed(0)} kg below** your ${(targetAnnualKg / 1000).toFixed(2)} t target. You're on track; consider tightening your target by 10% to keep pushing.`,
           keyInsights: [
-            `Current Footprint: ${context.footprint.totalAnnualEmissionsTonnes} t CO2e`,
-            `Target Budget: ${(context.targetAnnualKg / 1000).toFixed(2)} t CO2e`,
-            `Margin: ${Math.abs(gap).toFixed(0)} kg CO2e under target`,
+            `Current: ${footprint.totalAnnualEmissionsTonnes} t CO2e`,
+            `Target: ${(targetAnnualKg / 1000).toFixed(2)} t CO2e`,
+            `Buffer: ${Math.abs(gap).toFixed(0)} kg under target`,
           ],
-          suggestedAction: 'Consider lowering your annual target by another 10% to push for net-zero living!',
+          suggestedAction: 'Lower your annual target by 10% in the Goals page to maintain momentum.',
           source: 'LOCAL_DETERMINISTIC',
           mode: 'local',
         };
       }
-
       return {
-        answer: `To hit your target budget of ${(context.targetAnnualKg / 1000).toFixed(2)} t CO2e/year, you need to reduce your current footprint by **${gap.toFixed(0)} kg CO2e (${gapTonnes} t)** per year (a ${((gap / context.footprint.totalAnnualEmissionsKg) * 100).toFixed(1)}% reduction). Using our Reduction Plan Optimizer, you can achieve this by reducing vehicle travel, switching to renewable electricity, or adopting a plant-forward diet.`,
+        answer: `You need to cut **${gap.toFixed(0)} kg CO2e (${gapTonnes} t) per year** — a ${((gap / footprint.totalAnnualEmissionsKg) * 100).toFixed(1)}% reduction — to hit your ${(targetAnnualKg / 1000).toFixed(2)} t target. The biggest wins are in ${largest.toLowerCase()}, which alone is ${pct}% of your total.`,
         keyInsights: [
-          `Target Gap: ${gap.toFixed(0)} kg CO2e (${gapTonnes} t/yr)`,
-          `Target Budget: ${(context.targetAnnualKg / 1000).toFixed(2)} t CO2e`,
-          `Current Footprint: ${context.footprint.totalAnnualEmissionsTonnes} t CO2e`,
+          `Gap to target: ${gap.toFixed(0)} kg CO2e (${gapTonnes} t/yr)`,
+          `Current: ${footprint.totalAnnualEmissionsTonnes} t CO2e`,
+          `Target: ${(targetAnnualKg / 1000).toFixed(2)} t CO2e`,
         ],
-        suggestedAction: 'Open the "Build My Reduction Plan" optimizer tool to generate a budget-friendly reduction strategy.',
+        suggestedAction: 'Use the Reduction Plan Optimizer to find the cheapest path to your target.',
         source: 'LOCAL_DETERMINISTIC',
         mode: 'local',
       };
     }
 
+    // What to reduce first / priority
+    if (qLower.includes('first') || qLower.includes('reduce') || qLower.includes('start') || qLower.includes('priority') || qLower.includes('should')) {
+      const sorted = Object.entries(footprint.categoryBreakdown)
+        .sort(([, a], [, b]) => b.annualEmissionsKg - a.annualEmissionsKg)
+        .slice(0, 3);
+      const [top, second, third] = sorted;
+      return {
+        answer: `Start with **${top[0]}** (${top[1].percentage.toFixed(1)}% of your footprint). Then tackle ${second?.[0] ?? ''} (${second?.[1]?.percentage.toFixed(1) ?? 0}%) and ${third?.[0] ?? ''} (${third?.[1]?.percentage.toFixed(1) ?? 0}%). Together those three categories account for the bulk of your ${footprint.totalAnnualEmissionsTonnes} t total.`,
+        keyInsights: [
+          `#1 priority: ${top[0]} — ${top[1].annualEmissionsKg.toFixed(0)} kg CO2e/yr`,
+          `#2 priority: ${second?.[0]} — ${second?.[1]?.annualEmissionsKg.toFixed(0)} kg CO2e/yr`,
+          `#3 priority: ${third?.[0]} — ${third?.[1]?.annualEmissionsKg.toFixed(0)} kg CO2e/yr`,
+        ],
+        suggestedAction: `Log your ${top[0].toLowerCase()} activities in the Diary to track progress week by week.`,
+        source: 'LOCAL_DETERMINISTIC',
+        mode: 'local',
+      };
+    }
+
+    // Daily / monthly / average
+    if (qLower.includes('daily') || qLower.includes('day') || qLower.includes('monthly') || qLower.includes('month') || qLower.includes('average')) {
+      return {
+        answer: `Your estimated daily average is **${footprint.totalDailyEmissionsKg} kg CO2e/day** (${footprint.totalMonthlyEmissionsKg} kg/month, ${footprint.totalAnnualEmissionsTonnes} t/year). The global average for net-zero by 2050 is roughly 2.5 kg/day — compare that to your number to gauge where you stand.`,
+        keyInsights: [
+          `Daily: ${footprint.totalDailyEmissionsKg} kg CO2e`,
+          `Monthly: ${footprint.totalMonthlyEmissionsKg} kg CO2e`,
+          `Annual: ${footprint.totalAnnualEmissionsTonnes} t CO2e`,
+        ],
+        suggestedAction: 'Use the Diary to log today\'s activities and watch your daily number move in real time.',
+        source: 'LOCAL_DETERMINISTIC',
+        mode: 'local',
+      };
+    }
+
+    // Confidence / accuracy / uncertainty
+    if (qLower.includes('confiden') || qLower.includes('accurate') || qLower.includes('certain') || qLower.includes('sure') || qLower.includes('range')) {
+      return {
+        answer: `Your footprint estimate has **${uncertainty.overallConfidence} confidence** (score: ${uncertainty.confidenceScorePct}%). The plausible range is **${uncertainty.minAnnualTonnes}–${uncertainty.maxAnnualTonnes} t CO2e/year** around a central estimate of ${footprint.totalAnnualEmissionsTonnes} t. Adding more diary entries narrows this range.`,
+        keyInsights: [
+          `Confidence: ${uncertainty.overallConfidence} (${uncertainty.confidenceScorePct}%)`,
+          `Low estimate: ${uncertainty.minAnnualTonnes} t CO2e/yr`,
+          `High estimate: ${uncertainty.maxAnnualTonnes} t CO2e/yr`,
+        ],
+        suggestedAction: 'Log more diary entries to tighten your confidence range.',
+        source: 'LOCAL_DETERMINISTIC',
+        mode: 'local',
+      };
+    }
+
+    // Scenarios
+    if (qLower.includes('scenario') || qLower.includes('what if') || qLower.includes('simulate')) {
+      return {
+        answer: `You have **${scenariosCount} saved scenario${scenariosCount !== 1 ? 's' : ''}**. Scenarios let you model "what if" changes — like switching to an EV or going vegan — and see the exact kg CO2e impact before you commit. ${scenariosCount === 0 ? "You haven't built any yet — it only takes a minute." : 'Check them in the Scenarios page to compare options.'}`,
+        keyInsights: [
+          `Saved scenarios: ${scenariosCount}`,
+          `Current footprint: ${footprint.totalAnnualEmissionsTonnes} t CO2e/yr`,
+          `Gap to target: ${gap > 0 ? `${gapTonnes} t to cut` : 'already on target'}`,
+        ],
+        suggestedAction: 'Open the Scenarios page and model your most impactful lifestyle change.',
+        source: 'LOCAL_DETERMINISTIC',
+        mode: 'local',
+      };
+    }
+
+    // Anomalies / spikes
+    if (qLower.includes('anomal') || qLower.includes('spike') || qLower.includes('unusual') || qLower.includes('weird')) {
+      return {
+        answer: recentAnomalyCount > 0
+          ? `Your diary shows **${recentAnomalyCount} statistical anomal${recentAnomalyCount !== 1 ? 'ies' : 'y'}** in recent entries — days where your emissions were unusually high compared to your baseline. These are worth reviewing in the Insights page.`
+          : `No statistical anomalies detected in your recent diary entries — your emissions look consistent with your usual patterns.`,
+        keyInsights: [
+          `Anomalies detected: ${recentAnomalyCount}`,
+          `Annual average: ${footprint.totalDailyEmissionsKg} kg CO2e/day`,
+          `Largest category: ${largest} (${pct}%)`,
+        ],
+        suggestedAction: recentAnomalyCount > 0 ? 'Visit Insights to review the flagged diary entries.' : 'Keep logging consistently to maintain clean anomaly detection.',
+        source: 'LOCAL_DETERMINISTIC',
+        mode: 'local',
+      };
+    }
+
+    // Generic fallback — summarises the full profile, never repeats verbatim
+    const overOrUnder = gap > 0
+      ? `${gapTonnes} t over your ${(targetAnnualKg / 1000).toFixed(2)} t target`
+      : `${Math.abs(gap / 1000).toFixed(2)} t under your ${(targetAnnualKg / 1000).toFixed(2)} t target`;
     return {
-      answer: `Hello ${context.userName}! I am your Carbon Intelligence Coach. Your current estimated annual footprint is **${context.footprint.totalAnnualEmissionsTonnes} t CO2e/year** with **${context.uncertainty.overallConfidence} confidence**. Your largest category is **${context.footprint.largestCategory}**. Feel free to ask me how to reduce emissions, evaluate scenarios, or reach your carbon target!`,
+      answer: `Here's a snapshot for ${userName}: your estimated annual footprint is **${footprint.totalAnnualEmissionsTonnes} t CO2e** (${footprint.totalDailyEmissionsKg} kg/day), with **${uncertainty.overallConfidence} confidence** (range: ${uncertainty.minAnnualTonnes}–${uncertainty.maxAnnualTonnes} t). You're currently **${overOrUnder}**. Your biggest category is **${largest}** at ${pct}%. Try asking me something more specific — about a category, your target gap, daily averages, or your scenarios.`,
       keyInsights: [
-        `Annual Footprint: ${context.footprint.totalAnnualEmissionsTonnes} t CO2e`,
-        `Daily Average: ${context.footprint.totalDailyEmissionsKg} kg CO2e/day`,
-        `Confidence Level: ${context.uncertainty.overallConfidence}`,
+        `Annual footprint: ${footprint.totalAnnualEmissionsTonnes} t CO2e (${uncertainty.overallConfidence} confidence)`,
+        `Largest source: ${largest} — ${pct}% of total`,
+        `vs. target: ${gap > 0 ? `${gapTonnes} t to cut` : 'on target ✓'}`,
       ],
-      suggestedAction: 'Try asking: "Why is my footprint high?" or "How can I reach my carbon target?"',
+      suggestedAction: 'Ask: "What should I reduce first?" or "How far am I over target?"',
       source: 'LOCAL_DETERMINISTIC',
       mode: 'local',
     };

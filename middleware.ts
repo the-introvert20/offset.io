@@ -47,6 +47,22 @@ export async function middleware(request: NextRequest) {
   });
 
   if (isPublic) {
+    // B.5: signed-in users visiting the landing page should go straight to their dashboard.
+    // Auth pages (/auth/login, /auth/register) stay accessible even when signed in
+    // (e.g. the user wants to log into a different account).
+    if (pathname === '/') {
+      const token = request.cookies.get('offset_session')?.value;
+      if (token) {
+        try {
+          const session = await verifyToken(token);
+          if (session?.userId) {
+            return NextResponse.redirect(new URL('/dashboard', request.url));
+          }
+        } catch {
+          // Invalid/expired token — serve the public landing page as normal.
+        }
+      }
+    }
     return NextResponse.next();
   }
 
