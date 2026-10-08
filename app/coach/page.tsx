@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { PixelCharacter, PixelIcon, type CharacterState } from '@/components/pixel';
 
 interface ChatMessage {
   sender: 'user' | 'coach';
@@ -113,7 +114,7 @@ export default function CoachPage() {
           <span className="font-label-caps-sm text-label-caps-sm uppercase tracking-widest font-bold" role="status">
             {loading ? 'Thinking…' : 'Ready'}
           </span>
-          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">smart_toy</span>
+          <PixelIcon name="coach-tech" size={18} />
         </div>
       </section>
 
@@ -121,22 +122,32 @@ export default function CoachPage() {
       <div className="p-space-lg md:p-space-xl space-y-space-lg">
 
         {/* Header */}
-        <div className="border-b border-on-surface pb-space-sm">
-          <span className="font-label-caps-sm uppercase text-primary font-bold tracking-widest">
-            Ask about your footprint
-          </span>
-          <h1 className="font-headline text-headline-xl uppercase font-bold tracking-tight mt-1">
-            Carbon coach
-          </h1>
-          <p className="font-body-md text-on-surface-variant max-w-3xl mt-1">
-            Ask about what drives your footprint and how to reach your goal. Answers come straight from your saved numbers — including the range we&apos;re confident about.
-          </p>
+        <div className="border-b border-on-surface pb-space-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <span className="font-label-caps-sm uppercase text-primary font-bold tracking-widest">
+              Ask about your footprint
+            </span>
+            <h1 className="font-headline text-headline-xl uppercase font-bold tracking-tight mt-1">
+              Carbon coach
+            </h1>
+            <p className="font-body-md text-on-surface-variant max-w-3xl mt-1">
+              Ask about what drives your footprint and how to reach your goal. Answers come straight from your saved numbers — including the range we&apos;re confident about.
+            </p>
+          </div>
+          <div className="flex items-center gap-space-sm p-space-sm bg-surface-container-low border border-on-surface shrink-0">
+            <PixelCharacter character="tech" state={loading ? 'streak-active' : 'normal'} size={48} />
+            <div className="font-label-caps-sm uppercase">
+              <span className="font-bold text-on-surface block">The Tech</span>
+              <span className="text-on-surface-variant text-xs">{loading ? 'Processing…' : 'Online'}</span>
+            </div>
+          </div>
         </div>
 
         {/* Preset Query Grid */}
         <div>
-          <div className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant mb-space-sm">
-            Try asking
+          <div className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface-variant mb-space-sm flex items-center gap-2">
+            <PixelIcon name="reduction" size={14} />
+            <span>Try asking</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
             {presetQueries.map((pq, i) => (
@@ -155,8 +166,9 @@ export default function CoachPage() {
         {/* Chat Log */}
         <div className="border border-on-surface bg-surface-container-low">
           <div className="p-space-sm border-b border-on-surface flex items-center justify-between">
-            <span className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface">
-              Conversation
+            <span className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface flex items-center gap-2">
+              <PixelIcon name="coach-tech" size={16} />
+              <span>Conversation</span>
             </span>
             <span className="material-symbols-outlined text-[18px] text-on-surface-variant" aria-hidden="true">chat</span>
           </div>
@@ -169,16 +181,20 @@ export default function CoachPage() {
               >
                 {/* Avatar */}
                 <div
-                  className={`w-8 h-8 border border-on-surface flex items-center justify-center font-label-caps-sm font-bold shrink-0 ${
+                  className={`w-9 h-9 border border-on-surface flex items-center justify-center shrink-0 ${
                     msg.sender === 'user'
                       ? 'bg-on-surface text-surface-container-lowest'
-                      : 'bg-primary text-on-primary'
+                      : 'bg-surface-container-lowest'
                   }`}
                 >
                   {msg.sender === 'user' ? (
                     <span className="material-symbols-outlined text-[18px]" aria-hidden="true">person</span>
                   ) : (
-                    <span className="material-symbols-outlined text-[18px]" aria-hidden="true">smart_toy</span>
+                    <PixelCharacter
+                      character="tech"
+                      state={msg.source === 'ERROR' ? 'over-target' : 'normal'}
+                      size={32}
+                    />
                   )}
                 </div>
 
@@ -194,8 +210,9 @@ export default function CoachPage() {
 
                   {msg.keyInsights && msg.keyInsights.length > 0 && (
                     <div className="border-t border-on-surface/20 pt-space-xs space-y-0.5">
-                      <div className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-primary">
-                        Key numbers
+                      <div className="font-label-caps-sm text-label-caps-sm uppercase font-bold text-primary flex items-center gap-1.5">
+                        <PixelIcon name="audit-meter" size={12} />
+                        <span>Key numbers</span>
                       </div>
                       {msg.keyInsights.map((ins, i) => (
                         <div key={i} className="font-body-sm text-body-sm flex items-start gap-1">
@@ -207,8 +224,9 @@ export default function CoachPage() {
                   )}
 
                   {msg.suggestedAction && (
-                    <div className="border-t border-on-surface/20 pt-space-xs font-label-caps-sm text-label-caps-sm uppercase font-bold text-primary">
-                      Next step: {msg.suggestedAction}
+                    <div className="border-t border-on-surface/20 pt-space-xs font-label-caps-sm text-label-caps-sm uppercase font-bold text-primary flex items-center gap-1.5">
+                      <PixelIcon name="target-flag" size={12} />
+                      <span>Next step: {msg.suggestedAction}</span>
                     </div>
                   )}
 
@@ -223,8 +241,8 @@ export default function CoachPage() {
 
             {loading && (
               <div className="flex items-start gap-space-sm">
-                <div className="w-8 h-8 border border-on-surface flex items-center justify-center bg-primary text-on-primary shrink-0">
-                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">smart_toy</span>
+                <div className="w-9 h-9 border border-on-surface flex items-center justify-center bg-surface-container-lowest shrink-0">
+                  <PixelCharacter character="tech" state="streak-active" size={32} />
                 </div>
                 <div className="border border-on-surface p-space-sm bg-surface-container-lowest flex items-center space-x-space-xs">
                   <div className="w-2 h-2 bg-primary animate-pulse" aria-hidden="true"></div>

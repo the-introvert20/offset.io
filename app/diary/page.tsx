@@ -13,6 +13,8 @@ import {
   diaryDisplayLabels,
 } from '@/lib/diary-options';
 import { getComparisons } from '@/lib/comparisons';
+import { PixelIcon } from '@/components/pixel';
+import type { PixelIconName } from '@/components/pixel';
 
 interface DiaryEntry {
   id: string;
@@ -175,7 +177,7 @@ export default function DiaryPage() {
           </span>
           {streak && streak.current > 0 && (
             <span className="flex items-center gap-1 font-label-caps-sm text-label-caps-sm uppercase font-bold">
-              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">local_fire_department</span>
+              <PixelIcon name="streak" size={16} />
               {streak.current} day streak
             </span>
           )}
@@ -243,7 +245,7 @@ export default function DiaryPage() {
                   <span className="font-label-caps-sm uppercase font-bold text-on-surface">Activity logged</span>
                   {streak && streak.current > 1 && (
                     <span className="ml-auto font-label-caps-sm uppercase font-bold text-primary flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[14px]" aria-hidden="true">local_fire_department</span>
+                      <PixelIcon name="streak" size={14} />
                       {streak.current} day streak
                     </span>
                   )}
@@ -275,7 +277,11 @@ export default function DiaryPage() {
               </div>
 
               <div>
-                <label htmlFor="diary-category" className="font-label-caps-sm uppercase font-bold text-on-surface block mb-1">
+                <label htmlFor="diary-category" className="font-label-caps-sm uppercase font-bold text-on-surface block mb-1 flex items-center gap-space-xs">
+                  {category === 'TRANSPORTATION' ? <PixelIcon name="petrol-car" size={14} /> :
+                   category === 'FOOD' ? <PixelIcon name="utensils" size={14} /> :
+                   category === 'ENERGY' ? <PixelIcon name="grid-bolt" size={14} /> :
+                   <PixelIcon name="daily-log" size={14} />}
                   What kind of activity?
                 </label>
                 <select

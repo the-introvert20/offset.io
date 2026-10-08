@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { classifyDashboardResponse, type DashboardViewState } from '@/lib/dashboard-state';
 import { getUnifiedCategoryBreakdown, type UnifiedCategoryKey } from '@/lib/taxonomy';
 import { getComparisons } from '@/lib/comparisons';
+import { PixelIcon, PixelCharacter, resolveCharacterState } from '@/components/pixel';
 
 interface DashboardData {
   footprint: {
@@ -232,7 +233,7 @@ export default function DashboardPage() {
           <span className="font-label-caps-sm text-label-caps-sm uppercase tracking-widest font-bold">
             Confidence: {uncertainty?.overallConfidence || 'MEDIUM'} ({uncertainty?.minAnnualTonnes}–{uncertainty?.maxAnnualTonnes} t)
           </span>
-          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">verified</span>
+          <PixelIcon name="audit-meter" size={16} />
         </div>
       </section>
 
@@ -242,7 +243,7 @@ export default function DashboardPage() {
           {/* Streak badge */}
           {streak.current > 0 && (
             <div className="px-space-md py-space-xs flex items-center gap-space-sm border-b sm:border-b-0 sm:border-r border-on-surface bg-surface-container-lowest">
-              <span className="material-symbols-outlined text-[20px] text-primary" aria-hidden="true">local_fire_department</span>
+              <PixelIcon name="streak" size={20} />
               <div>
                 <span className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface">
                   {streak.current} day streak
@@ -394,7 +395,8 @@ export default function DashboardPage() {
           <div className="lg:col-span-7 p-space-lg md:p-space-xl border-b lg:border-b-0 lg:border-r border-on-surface flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between border-b border-on-surface pb-space-sm mb-space-md">
-                <span className="font-label-caps-md text-label-caps-md uppercase text-on-surface font-bold tracking-wider">
+                <span className="font-label-caps-md text-label-caps-md uppercase text-on-surface font-bold tracking-wider flex items-center gap-space-xs">
+                  <PixelIcon name="footprint" size={16} />
                   Your current footprint
                 </span>
                 <span className="px-space-xs py-0.5 bg-secondary-fixed text-on-secondary-fixed font-label-caps-sm text-label-caps-sm uppercase font-bold">
@@ -506,7 +508,15 @@ export default function DashboardPage() {
                     <span className="font-label-caps-md text-label-caps-md uppercase tracking-wider px-space-xs py-0.5 bg-surface-container-lowest text-on-surface border border-on-surface font-bold">
                       Top opportunity
                     </span>
-                    <span className="material-symbols-outlined text-[24px] text-primary" aria-hidden="true">crisis_alert</span>
+                    {topRec.category?.toLowerCase().includes('food') || topRec.category?.toLowerCase().includes('diet') ? (
+                      <PixelIcon name="plant-diet" size={24} />
+                    ) : topRec.category?.toLowerCase().includes('transport') || topRec.category?.toLowerCase().includes('travel') ? (
+                      <PixelIcon name="petrol-car" size={24} />
+                    ) : topRec.category?.toLowerCase().includes('energy') || topRec.category?.toLowerCase().includes('home') ? (
+                      <PixelIcon name="grid-bolt" size={24} />
+                    ) : (
+                      <PixelIcon name="reduction" size={24} />
+                    )}
                   </div>
                   <div className="pt-space-md">
                     <h2 className="font-headline text-headline-xl uppercase font-bold leading-tight tracking-tight mt-1">

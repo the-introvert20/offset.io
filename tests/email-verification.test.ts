@@ -7,7 +7,7 @@ describe('Email Verification & Pre-Hijacking Protection (Audit B.3)', () => {
     // Clean up test users
     await prisma.user.deleteMany({
       where: {
-        email: { in: ['unverified@test.com', 'verified@test.com', 'newgoogle@test.com'] },
+        email: { in: ['unverified@test.com', 'verified@test.com', 'newgoogle@test.com', 'google-ev-test@test.com'] },
       },
     });
   });
