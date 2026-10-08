@@ -8,3 +8,5 @@ export type { PixelIconName, PixelIconProps } from './PixelIcons';
 
 export { PixelCharacter, resolveCharacterState } from './PixelCharacters';
 export type { CharacterType, CharacterState, PixelCharacterProps } from './PixelCharacters';
+
+export { default as PixelBlast } from './PixelBlast';
