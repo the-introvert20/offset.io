@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Notice from '@/components/Notice';
 import { DIET_OPTIONS, isDietValue } from '@/lib/diet-options';
 import { buildSimulatorActivities, saveSimulatorSnapshot } from '@/lib/simulator-snapshot';
+import { PixelIcon, PixelCharacter } from '@/components/pixel';
 
 export default function SimulatorPage() {
   const router = useRouter();
@@ -244,7 +245,10 @@ export default function SimulatorPage() {
             {/* Lever 1: Driving Distance */}
             <div className="border border-on-surface p-space-sm bg-surface-container-low space-y-1">
               <div className="flex justify-between items-center font-label-caps-md uppercase font-bold">
-                <label htmlFor="sim-driving">Driving per month</label>
+                <label htmlFor="sim-driving" className="flex items-center gap-2">
+                  <PixelIcon name="petrol-car" size={16} />
+                  <span>Driving per month</span>
+                </label>
                 <span className="text-primary font-headline text-headline-sm">{carKmMonthly} km</span>
               </div>
               <input
@@ -267,7 +271,10 @@ export default function SimulatorPage() {
             {/* Lever 2: Vehicle Powertrain */}
             <div className="border border-on-surface p-space-sm bg-surface-container-low space-y-2">
               <div className="flex justify-between items-center font-label-caps-md uppercase font-bold">
-                <span id="sim-vehicle-label">Car fuel type</span>
+                <span id="sim-vehicle-label" className="flex items-center gap-2">
+                  <PixelIcon name={vehicleSubtype === 'ev' ? 'ev-plug' : vehicleSubtype === 'diesel' ? 'diesel-can' : 'petrol-car'} size={16} />
+                  <span>Car fuel type</span>
+                </span>
                 <span className="text-secondary font-bold font-mono">{vehicleSubtype.toUpperCase()}</span>
               </div>
               <div className="grid grid-cols-4 gap-1 font-label-caps-sm uppercase font-bold" role="group" aria-labelledby="sim-vehicle-label">
@@ -295,7 +302,10 @@ export default function SimulatorPage() {
             {/* Lever 3: Electricity Usage */}
             <div className="border border-on-surface p-space-sm bg-surface-container-low space-y-1">
               <div className="flex justify-between items-center font-label-caps-md uppercase font-bold">
-                <label htmlFor="sim-electricity">Electricity per month</label>
+                <label htmlFor="sim-electricity" className="flex items-center gap-2">
+                  <PixelIcon name="grid-bolt" size={16} />
+                  <span>Electricity per month</span>
+                </label>
                 <span className="text-primary font-headline text-headline-sm">{electricityKwhMonthly} kWh</span>
               </div>
               <input
@@ -318,7 +328,10 @@ export default function SimulatorPage() {
             {/* Lever 4: Renewable Grid Share */}
             <div className="border border-on-surface p-space-sm bg-surface-container-low space-y-1">
               <div className="flex justify-between items-center font-label-caps-md uppercase font-bold">
-                <label htmlFor="sim-renewable">Clean electricity share</label>
+                <label htmlFor="sim-renewable" className="flex items-center gap-2">
+                  <PixelIcon name="solar-panel" size={16} />
+                  <span>Clean electricity share</span>
+                </label>
                 <span className="text-primary font-headline text-headline-sm">{renewablePct}%</span>
               </div>
               <input
@@ -341,7 +354,10 @@ export default function SimulatorPage() {
             {/* Lever 5: Diet Profile */}
             <div className="border border-on-surface p-space-sm bg-surface-container-low space-y-2">
               <div className="flex justify-between items-center font-label-caps-md uppercase font-bold">
-                <span id="sim-diet-label">Eating habits</span>
+                <span id="sim-diet-label" className="flex items-center gap-2">
+                  <PixelIcon name={dietPattern === 'vegan' ? 'vegan-leaf' : dietPattern === 'vegetarian' ? 'plant-diet' : 'meat-portion'} size={16} />
+                  <span>Eating habits</span>
+                </span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 font-label-caps-sm uppercase font-bold" role="group" aria-labelledby="sim-diet-label">
                 {DIET_OPTIONS.map((d) => (
@@ -363,7 +379,10 @@ export default function SimulatorPage() {
             {/* Lever 6: Aviation Distance */}
             <div className="border border-on-surface p-space-sm bg-surface-container-low space-y-1">
               <div className="flex justify-between items-center font-label-caps-md uppercase font-bold">
-                <label htmlFor="sim-flights">Flights per year</label>
+                <label htmlFor="sim-flights" className="flex items-center gap-2">
+                  <PixelIcon name="flight-short" size={16} />
+                  <span>Flights per year</span>
+                </label>
                 <span className="text-primary font-headline text-headline-sm">{flightKmYearly} km</span>
               </div>
               <input
@@ -386,7 +405,10 @@ export default function SimulatorPage() {
             {/* Lever 7: Waste */}
             <div className="border border-on-surface p-space-sm bg-surface-container-low space-y-1">
               <div className="flex justify-between items-center font-label-caps-md uppercase font-bold">
-                <label htmlFor="sim-waste">Waste per month</label>
+                <label htmlFor="sim-waste" className="flex items-center gap-2">
+                  <PixelIcon name="waste-bin" size={16} />
+                  <span>Waste per month</span>
+                </label>
                 <span className="text-primary font-headline text-headline-sm">{wasteKgMonthly} kg</span>
               </div>
               <input
