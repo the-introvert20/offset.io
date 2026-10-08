@@ -204,11 +204,11 @@ Located in [`lib/engine/optimizer.ts`](lib/engine/optimizer.ts).
 Generates actionable reduction plans under target constraints:
 
 1. **Efficiency Metric**:
-   $$ \text{Efficiency} = \frac{\text{Annual Reduction (kg CO}_2\text{e)}}{\max(0.01, \text{Monthly Cost (\$)} )} $$
+   $$\text{Efficiency} = \frac{\text{Annual Reduction (kg CO}_2\text{e)}}{\max(0.01,\ \text{Monthly Cost (USD)})}$$
 2. **Greedy Selection**: Sorts non-forbidden actions by efficiency descending and selects actions until the target reduction percentage or `maxMonthlyBudget` is satisfied.
 
 > [!TIP]
-> Money-saving recommendations (negative monthly cost) have an effective cost of $\$0.01$, ensuring financial savings are prioritized first.
+> Money-saving recommendations (negative monthly cost) are assigned an effective cost of $0.01 USD, ensuring financial savings are always prioritised first.
 
 ---
 
