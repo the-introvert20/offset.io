@@ -208,13 +208,21 @@ export default function SimulatorPage() {
             </span>
           </div>
 
-          <div className="p-space-md bg-yellow-accent text-on-surface">
-            <span className="font-label-caps-sm uppercase font-bold block">Change</span>
-            <div className="font-display text-4xl font-bold mt-1">
+          <div className={`p-space-md ${
+            reductionKg !== null && reductionKg < 0
+              ? 'bg-[#FF4D30]/15 text-[#1c1b1b] border-l-4 border-l-[#FF4D30]'
+              : reductionKg !== null && reductionKg > 0
+                ? 'bg-primary/10 text-[#1c1b1b] border-l-4 border-l-primary'
+                : 'bg-surface-container-high text-[#1c1b1b]'
+          }`}>
+            <span className="font-label-caps-sm uppercase font-bold block text-on-surface-variant">Projected Change</span>
+            <div className={`font-display text-4xl font-bold mt-1 ${
+              reductionKg !== null && reductionKg < 0 ? 'text-[#ba1a1a]' : 'text-primary'
+            }`}>
               {reductionPct !== null ? (reductionKg !== null && reductionKg >= 0 ? `−${reductionPct.toFixed(1)}%` : `+${Math.abs(reductionPct).toFixed(1)}%`) : '…'}
             </div>
-            <span className="font-label-caps-sm uppercase font-bold">
-              {reductionKg !== null ? (reductionKg >= 0 ? 'Lower footprint' : 'Higher footprint') : '—'}
+            <span className="font-label-caps-sm uppercase font-bold mt-0.5 inline-block">
+              {reductionKg !== null ? (reductionKg > 0 ? '✓ Net reduction' : reductionKg < 0 ? '⚠ Higher emissions' : 'Baseline match') : '—'}
             </span>
           </div>
         </div>
@@ -259,7 +267,7 @@ export default function SimulatorPage() {
                 step="25"
                 value={carKmMonthly}
                 onChange={(e) => setCarKmMonthly(Number(e.target.value))}
-                className="w-full accent-on-surface cursor-pointer h-2 bg-surface-container-highest"
+                className="neo-slider w-full cursor-pointer my-2"
               />
               <div className="flex justify-between font-label-caps-sm uppercase text-on-surface-variant font-bold">
                 <span>0 km (no driving)</span>
@@ -316,7 +324,7 @@ export default function SimulatorPage() {
                 step="25"
                 value={electricityKwhMonthly}
                 onChange={(e) => setElectricityKwhMonthly(Number(e.target.value))}
-                className="w-full accent-on-surface cursor-pointer h-2 bg-surface-container-highest"
+                className="neo-slider w-full cursor-pointer my-2"
               />
               <div className="flex justify-between font-label-caps-sm uppercase text-on-surface-variant font-bold">
                 <span>0 kWh</span>
@@ -342,7 +350,7 @@ export default function SimulatorPage() {
                 step="10"
                 value={renewablePct}
                 onChange={(e) => setRenewablePct(Number(e.target.value))}
-                className="w-full accent-on-surface cursor-pointer h-2 bg-surface-container-highest"
+                className="neo-slider w-full cursor-pointer my-2"
               />
               <div className="flex justify-between font-label-caps-sm uppercase text-on-surface-variant font-bold">
                 <span>0% standard grid</span>
@@ -393,7 +401,7 @@ export default function SimulatorPage() {
                 step="500"
                 value={flightKmYearly}
                 onChange={(e) => setFlightKmYearly(Number(e.target.value))}
-                className="w-full accent-on-surface cursor-pointer h-2 bg-surface-container-highest"
+                className="neo-slider w-full cursor-pointer my-2"
               />
               <div className="flex justify-between font-label-caps-sm uppercase text-on-surface-variant font-bold">
                 <span>0 km (no flights)</span>
@@ -419,7 +427,7 @@ export default function SimulatorPage() {
                 step="5"
                 value={wasteKgMonthly}
                 onChange={(e) => setWasteKgMonthly(Number(e.target.value))}
-                className="w-full accent-on-surface cursor-pointer h-2 bg-surface-container-highest"
+                className="neo-slider w-full cursor-pointer my-2"
               />
               <div className="flex justify-between font-label-caps-sm uppercase text-on-surface-variant font-bold">
                 <span>0 kg</span>

@@ -341,7 +341,7 @@ export default function ScenariosPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="E.g. bus to work + greener power"
-                    className="w-full border border-on-surface p-space-xs font-body text-on-surface focus:outline-none"
+                    className="neo-input min-h-[44px] w-full p-space-xs font-body text-on-surface"
                   />
                 </div>
 
@@ -355,7 +355,7 @@ export default function ScenariosPage() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Short note about the assumptions…"
-                    className="w-full border border-on-surface p-space-xs font-body text-on-surface focus:outline-none"
+                    className="neo-input w-full p-space-xs font-body text-on-surface"
                   />
                 </div>
 
@@ -368,7 +368,7 @@ export default function ScenariosPage() {
                     type="number"
                     value={costDelta}
                     onChange={(e) => setCostDelta(Number(e.target.value))}
-                    className="w-full border border-on-surface p-space-xs font-body text-on-surface focus:outline-none"
+                    className="neo-input min-h-[44px] w-full p-space-xs font-body text-on-surface"
                   />
                 </div>
 

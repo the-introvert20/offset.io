@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Notice from '@/components/Notice';
 import { formatCurrency } from '@/lib/format';
+import SectorBadge from '@/components/SectorBadge';
 
 interface OptimizationResponse {
   currentAnnualKg: number;
@@ -172,7 +173,7 @@ export default function ReductionPlanPage() {
                 step="5"
                 value={targetPct}
                 onChange={(e) => setTargetPct(Number(e.target.value))}
-                className="w-full accent-on-surface cursor-pointer h-2 bg-surface-container-highest"
+                className="neo-slider w-full cursor-pointer my-2"
               />
               <div className="flex justify-between font-label-caps-sm uppercase text-on-surface-variant font-bold">
                 <span>−5% (gentle)</span>
@@ -195,7 +196,7 @@ export default function ReductionPlanPage() {
                 step="100"
                 value={budget}
                 onChange={(e) => setBudget(Number(e.target.value))}
-                className="w-full accent-on-surface cursor-pointer h-2 bg-surface-container-highest"
+                className="neo-slider w-full cursor-pointer my-2"
               />
               <div className="flex justify-between font-label-caps-sm uppercase text-on-surface-variant font-bold">
                 <span>{formatCurrency(0, currency)} (free only)</span>
@@ -304,11 +305,9 @@ export default function ReductionPlanPage() {
                         {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}
                       </span>
                       <div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="font-label-caps-md uppercase font-bold text-on-surface">{action.title}</span>
-                          <span className="px-space-xs py-0.5 border border-on-surface bg-surface-container font-label-caps-sm uppercase font-bold">
-                            {action.category}
-                          </span>
+                          <SectorBadge category={action.category} />
                         </div>
                         <p className="font-body-sm text-on-surface-variant mt-1">{action.explanation}</p>
                       </div>

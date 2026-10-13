@@ -175,9 +175,10 @@ export default function Navbar() {
           <div className="flex items-center px-space-md border-l border-on-surface bg-surface-container-lowest">
             <Link
               href="/diary"
-              className="min-h-[36px] inline-flex items-center px-space-md py-space-xs bg-on-surface text-surface-container-lowest font-label-caps-md text-label-caps-md uppercase border border-on-surface hover:bg-primary hover:text-on-primary transition-none font-bold whitespace-nowrap"
+              className="min-h-[38px] inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-primary text-white font-label-caps-md text-label-caps-md uppercase border-2 border-on-surface shadow-[2px_2px_0px_#1c1b1b] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-primary/90 transition-all font-bold whitespace-nowrap"
             >
-              Log activity
+              <span className="material-symbols-outlined text-[16px] text-yellow-accent" aria-hidden="true">edit_calendar</span>
+              <span>Log activity</span>
             </Link>
           </div>
 
@@ -265,9 +266,10 @@ export default function Navbar() {
             <Link
               href="/diary"
               onClick={() => setMobileMenuOpen(false)}
-              className="min-h-[44px] inline-flex items-center px-space-md py-space-xs bg-on-surface text-surface-container-lowest font-label-caps-md uppercase font-bold"
+              className="min-h-[44px] inline-flex items-center gap-2 px-space-md py-space-xs bg-primary text-white border-2 border-on-surface shadow-[2px_2px_0px_#1c1b1b] font-label-caps-md uppercase font-bold"
             >
-              Log activity
+              <span className="material-symbols-outlined text-[18px] text-yellow-accent" aria-hidden="true">edit_calendar</span>
+              <span>Log activity</span>
             </Link>
             {user ? (
               <div className="flex items-center space-x-3">

@@ -33,6 +33,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Push Database Schema
+        run: npx prisma db push --skip-generate
+        env:
+          DATABASE_URL: file:./dev.db
+
       - name: Run Tests (vitest)
         run: npm test
         env:

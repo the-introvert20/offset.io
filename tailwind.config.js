@@ -57,11 +57,15 @@ module.exports = {
         'on-error-container': '#93000a',
         'background': '#f0ede8',
         'on-background': '#1c1b1b',
-        // Specific Spot Colors from Stitch Design
-        'cyan-accent': '#00B2FE',
-        'coral-accent': '#FF5938',
-        'yellow-accent': '#FFDE38',
-        'cobalt-accent': '#1A36FF',
+        // Specific Unified Sector & Spot Colors (Neo-Brutalist System)
+        'sector-transport': '#00B0FF',
+        'sector-energy': '#0022CC',
+        'sector-food': '#FF4D30',
+        'sector-waste': '#FFC700',
+        'cyan-accent': '#00B0FF',
+        'coral-accent': '#FF4D30',
+        'yellow-accent': '#FFC700',
+        'cobalt-accent': '#0022CC',
       },
       fontFamily: {
         'display': ['"Space Grotesk"', 'sans-serif'],

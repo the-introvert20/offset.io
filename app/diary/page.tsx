@@ -15,6 +15,7 @@ import {
 import { getComparisons } from '@/lib/comparisons';
 import { PixelIcon } from '@/components/pixel';
 import type { PixelIconName } from '@/components/pixel';
+import SectorBadge from '@/components/SectorBadge';
 
 interface DiaryEntry {
   id: string;
@@ -272,7 +273,7 @@ export default function DiaryPage() {
                   required
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full border border-on-surface p-space-xs font-mono text-sm bg-surface-container-lowest"
+                  className="neo-input min-h-[44px] w-full p-space-xs font-mono text-sm"
                 />
               </div>
 
@@ -288,7 +289,7 @@ export default function DiaryPage() {
                   id="diary-category"
                   value={category}
                   onChange={(e) => pickCategory(e.target.value)}
-                  className="min-h-[44px] w-full border border-on-surface p-space-xs font-label-caps-sm uppercase bg-surface-container-lowest font-bold cursor-pointer"
+                  className="neo-input min-h-[44px] w-full p-space-xs font-label-caps-sm uppercase font-bold cursor-pointer"
                 >
                   {DIARY_CATALOG.map((c) => (
                     <option key={c.category} value={c.category}>{c.label}</option>
@@ -305,7 +306,7 @@ export default function DiaryPage() {
                     id="diary-activity"
                     value={activityObj?.activity ?? ''}
                     onChange={(e) => pickActivity(e.target.value)}
-                    className="min-h-[44px] w-full border border-on-surface p-space-xs font-label-caps-sm uppercase bg-surface-container-lowest"
+                    className="neo-input min-h-[44px] w-full p-space-xs font-label-caps-sm uppercase font-bold cursor-pointer"
                   >
                     {categoryObj?.activities.map((a) => (
                       <option key={a.activity} value={a.activity}>{a.label}</option>
@@ -324,7 +325,7 @@ export default function DiaryPage() {
                       const next = getDiarySubtype(category, activityObj?.activity ?? '', e.target.value);
                       if (next) setQuantity(next.defaultQty);
                     }}
-                    className="min-h-[44px] w-full border border-on-surface p-space-xs font-label-caps-sm uppercase bg-surface-container-lowest"
+                    className="neo-input min-h-[44px] w-full p-space-xs font-label-caps-sm uppercase font-bold cursor-pointer"
                   >
                     {activityObj?.subtypes.map((s) => (
                       <option key={s.subtype} value={s.subtype}>{s.label}</option>
@@ -346,13 +347,27 @@ export default function DiaryPage() {
                     required
                     value={quantity}
                     onChange={(e) => setQuantity(Number(e.target.value))}
-                    className="min-h-[44px] w-full border border-on-surface p-space-xs font-headline text-headline-sm font-bold bg-surface-container-lowest"
+                    className="neo-input min-h-[44px] w-full p-space-xs font-headline text-headline-sm font-bold"
                   />
                 </div>
                 <div className="flex items-end">
-                  <div className="w-full border border-on-surface p-space-xs bg-surface-container-lowest" aria-live="polite">
-                    <div className="font-label-caps-sm uppercase font-bold text-on-surface-variant">Estimate</div>
-                    <div className="font-headline text-headline-sm font-bold text-primary">≈ {previewKg.toFixed(2)} kg CO₂e</div>
+                  {/* Distinct Non-Editable Dynamic Badge */}
+                  <div
+                    className="w-full min-h-[44px] border-2 border-dashed border-primary/50 bg-primary/5 p-space-xs flex flex-col justify-center select-none"
+                    aria-live="polite"
+                  >
+                    <div className="flex items-center justify-between font-label-caps-sm text-[10px] uppercase font-bold text-primary mb-0.5">
+                      <span className="flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[13px]" aria-hidden="true">calculate</span>
+                        <span>Estimate</span>
+                      </span>
+                      <span className="text-[9px] bg-primary/10 text-primary px-1 py-0.2 uppercase font-mono font-bold">
+                        Calculated
+                      </span>
+                    </div>
+                    <div className="font-display text-headline-sm font-bold text-primary tracking-tight leading-none">
+                      ≈ {previewKg.toFixed(2)} <span className="text-xs font-headline font-bold text-on-surface">kg CO₂e</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -368,14 +383,14 @@ export default function DiaryPage() {
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="E.g. drive to work"
                   maxLength={200}
-                  className="min-h-[44px] w-full border border-on-surface p-space-xs font-body text-sm bg-surface-container-lowest"
+                  className="neo-input min-h-[44px] w-full p-space-xs font-body text-sm"
                 />
               </div>
             </div>
 
             <button
               type="submit"
-              className="min-h-[44px] w-full py-space-sm bg-on-surface text-surface-container-lowest font-label-caps-md uppercase font-bold border border-on-surface hover:bg-primary transition-none"
+              className="min-h-[44px] w-full py-space-sm bg-on-surface text-surface-container-lowest font-label-caps-md uppercase font-bold border-2 border-on-surface hover:bg-primary shadow-[2px_2px_0px_#1c1b1b] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
             >
               Log activity
             </button>
@@ -386,7 +401,7 @@ export default function DiaryPage() {
             <div className="space-y-space-sm">
               <div className="border-b border-on-surface pb-space-xs font-label-caps-md uppercase font-bold flex justify-between">
                 <span>Your entries ({entries.length})</span>
-                <span className="text-primary">Newest first</span>
+                <span className="text-primary font-bold">Newest first</span>
               </div>
 
               {loading ? (
@@ -406,9 +421,10 @@ export default function DiaryPage() {
                           <span className="font-mono text-xs font-bold text-on-surface-variant w-24 shrink-0">
                             {formatEntryDate(entry.date)}
                           </span>
-                          <span className="px-space-xs py-0.5 border border-on-surface bg-surface-container font-bold">
-                            {labels.categoryLabel}
-                          </span>
+                          <SectorBadge
+                            category={entry.category}
+                            labelOverride={labels.categoryLabel}
+                          />
                           <div>
                             <div className="font-bold text-on-surface">
                               {labels.activityLabel}
@@ -443,9 +459,32 @@ export default function DiaryPage() {
                   })}
                 </div>
               ) : (
-                <div className="p-space-lg border border-on-surface bg-surface-container-low text-center font-body-md text-on-surface-variant">
-                  <p className="font-bold text-on-surface mb-1">Nothing logged yet</p>
-                  <p>Log your first activity on the left — for example today&apos;s drive or lunch — and it will appear here with its estimate.</p>
+                /* Optimized Neo-Brutalist Empty State with Mini Historical Log Graph */
+                <div className="p-space-lg border-2 border-dashed border-on-surface/40 bg-surface-container-low text-center space-y-space-md">
+                  <div className="flex justify-center">
+                    <div className="w-56 p-space-sm bg-surface-container-lowest border-2 border-on-surface shadow-[3px_3px_0px_#1c1b1b]">
+                      <div className="flex items-center justify-between border-b border-on-surface pb-1 text-[10px] font-label-caps-sm uppercase font-bold text-on-surface-variant">
+                        <span>Timeline Preview</span>
+                        <span className="text-primary font-bold">Awaiting data</span>
+                      </div>
+                      {/* Mini Historical Log Vector Sparkline */}
+                      <div className="h-14 flex items-end justify-between gap-1.5 pt-2 px-1">
+                        <div className="w-5 h-5 bg-[#00B0FF]/20 border border-dashed border-[#00B0FF]" title="Transport" />
+                        <div className="w-5 h-9 bg-[#0022CC]/20 border border-dashed border-[#0022CC]" title="Energy" />
+                        <div className="w-5 h-7 bg-[#FF4D30]/20 border border-dashed border-[#FF4D30]" title="Food" />
+                        <div className="w-5 h-4 bg-[#FFC700]/20 border border-dashed border-[#FFC700]" title="Waste" />
+                        <div className="w-5 h-11 bg-primary/20 border-2 border-dashed border-primary" title="Today" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-headline text-headline-sm uppercase font-bold text-on-surface">
+                      No activities logged yet
+                    </p>
+                    <p className="font-body-sm text-body-sm text-on-surface-variant max-w-sm mx-auto leading-relaxed">
+                      Log your first activity on the left — such as today&apos;s commute, energy usage, or lunch. Entries will stack here with automated emission pricing and streak tracking.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>

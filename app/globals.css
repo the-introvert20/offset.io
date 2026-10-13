@@ -80,3 +80,112 @@
 ::-webkit-scrollbar-thumb {
   background: #1c1b1b;
 }
+
+/* Unified Neo-Brutalist Sector Badges */
+.badge-sector-transport {
+  background-color: #00B0FF;
+  color: #1c1b1b;
+  border: 1px solid #1c1b1b;
+  font-weight: 700;
+}
+.badge-sector-energy {
+  background-color: #0022CC;
+  color: #ffffff;
+  border: 1px solid #1c1b1b;
+  font-weight: 700;
+}
+.badge-sector-food {
+  background-color: #FF4D30;
+  color: #1c1b1b;
+  border: 1px solid #1c1b1b;
+  font-weight: 700;
+}
+.badge-sector-waste {
+  background-color: #FFC700;
+  color: #1c1b1b;
+  border: 1px solid #1c1b1b;
+  font-weight: 700;
+}
+
+/* Neo-Brutalist Interactive Form Input Styling */
+.neo-input {
+  background-color: #f7f5f0;
+  border: 2px solid #1c1b1b;
+  color: #1c1b1b;
+  box-shadow: 2px 2px 0px #1c1b1b;
+  transition: all 0.15s ease-in-out;
+}
+.neo-input:focus {
+  background-color: #ffffff;
+  border-color: #001fce;
+  outline: none;
+  box-shadow: 3px 3px 0px #001fce;
+}
+
+/* Neo-Brutalist Range Slider UX Enhancement */
+input[type="range"].neo-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 12px;
+  background: #1c1b1b;
+  border: 2px solid #1c1b1b;
+  outline: none;
+  border-radius: 0px;
+  cursor: pointer;
+}
+
+input[type="range"].neo-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: #00B0FF;
+  border: 2px solid #1c1b1b;
+  box-shadow: 2px 2px 0px #1c1b1b;
+  border-radius: 0px;
+  cursor: grab;
+  transition: transform 0.1s ease, background-color 0.1s ease, box-shadow 0.1s ease;
+}
+
+input[type="range"].neo-slider::-webkit-slider-thumb:hover {
+  background: #FFC700;
+  transform: scale(1.15);
+  box-shadow: 3px 3px 0px #1c1b1b;
+}
+
+input[type="range"].neo-slider::-webkit-slider-thumb:active {
+  background: #FF4D30;
+  cursor: grabbing;
+  transform: scale(1.05);
+}
+
+input[type="range"].neo-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: #00B0FF;
+  border: 2px solid #1c1b1b;
+  box-shadow: 2px 2px 0px #1c1b1b;
+  border-radius: 0px;
+  cursor: grab;
+  transition: transform 0.1s ease, background-color 0.1s ease, box-shadow 0.1s ease;
+}
+
+input[type="range"].neo-slider::-moz-range-thumb:hover {
+  background: #FFC700;
+  transform: scale(1.15);
+  box-shadow: 3px 3px 0px #1c1b1b;
+}
+
+input[type="range"].neo-slider::-moz-range-thumb:active {
+  background: #FF4D30;
+  cursor: grabbing;
+  transform: scale(1.05);
+}
+
+input[type="range"].neo-slider::-moz-range-track {
+  height: 12px;
+  background: #1c1b1b;
+  border: 2px solid #1c1b1b;
+  border-radius: 0px;
+}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import SectorBadge from '@/components/SectorBadge';
 
 export default function LandingPage() {
   // Live What-If Simulator State on Landing Page
@@ -382,14 +383,17 @@ export default function LandingPage() {
         <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           <div className="p-space-lg border-b lg:border-b-0 border-r border-on-surface bg-surface-container-lowest flex flex-col justify-between">
             <div>
-              <div className="w-full h-1.5 bg-cyan-accent mb-space-sm border border-on-surface"></div>
-              <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">SECTOR 01</span>
-              <h3 className="font-headline text-headline-sm uppercase text-on-surface font-bold mt-1">TRANSPORTATION</h3>
-              <div className="my-space-md">
-                <div className="font-display text-headline-xl text-on-surface font-bold leading-none">2,506</div>
-                <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">kg CO₂e • 52.0% SHARE</div>
+              <div className="w-full h-2 bg-[#00B0FF] mb-space-sm border border-on-surface"></div>
+              <div className="flex items-center justify-between">
+                <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">SECTOR 01</span>
+                <SectorBadge category="transport" />
               </div>
-              <p className="font-body-sm text-body-sm text-on-surface leading-normal">
+              <h3 className="font-headline text-headline-sm uppercase text-on-surface font-bold mt-2">TRANSPORTATION</h3>
+              <div className="my-space-md">
+                <div className="font-display text-4xl lg:text-5xl text-on-surface font-bold tracking-tight leading-none">2,506</div>
+                <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold mt-1">kg CO₂e • 52.0% SHARE</div>
+              </div>
+              <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
                 Dominant parameter: 380 km weekly highway commute via petrol vehicle. Air travel: 1 short-haul return trip.
               </p>
             </div>
@@ -401,14 +405,17 @@ export default function LandingPage() {
 
           <div className="p-space-lg border-b lg:border-b-0 md:border-r lg:border-r border-on-surface bg-surface-container-lowest flex flex-col justify-between">
             <div>
-              <div className="w-full h-1.5 bg-primary mb-space-sm border border-on-surface"></div>
-              <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">SECTOR 02</span>
-              <h3 className="font-headline text-headline-sm uppercase text-on-surface font-bold mt-1">ENERGY &amp; UTILITIES</h3>
-              <div className="my-space-md">
-                <div className="font-display text-headline-xl text-on-surface font-bold leading-none">1,156</div>
-                <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">kg CO₂e • 24.0% SHARE</div>
+              <div className="w-full h-2 bg-[#0022CC] mb-space-sm border border-on-surface"></div>
+              <div className="flex items-center justify-between">
+                <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">SECTOR 02</span>
+                <SectorBadge category="energy" />
               </div>
-              <p className="font-body-sm text-body-sm text-on-surface leading-normal">
+              <h3 className="font-headline text-headline-sm uppercase text-on-surface font-bold mt-2">ENERGY &amp; UTILITIES</h3>
+              <div className="my-space-md">
+                <div className="font-display text-4xl lg:text-5xl text-on-surface font-bold tracking-tight leading-none">1,156</div>
+                <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold mt-1">kg CO₂e • 24.0% SHARE</div>
+              </div>
+              <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
                 Grid blend: 64% clean source. Residential heating baseline: natural gas hydronic loop with standard thermal envelope.
               </p>
             </div>
@@ -420,14 +427,17 @@ export default function LandingPage() {
 
           <div className="p-space-lg border-b md:border-b-0 border-r border-on-surface bg-surface-container-lowest flex flex-col justify-between">
             <div>
-              <div className="w-full h-1.5 bg-coral-accent mb-space-sm border border-on-surface"></div>
-              <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">SECTOR 03</span>
-              <h3 className="font-headline text-headline-sm uppercase text-on-surface font-bold mt-1">FOOD &amp; DIET</h3>
-              <div className="my-space-md">
-                <div className="font-display text-headline-xl text-on-surface font-bold leading-none">772</div>
-                <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">kg CO₂e • 16.0% SHARE</div>
+              <div className="w-full h-2 bg-[#FF4D30] mb-space-sm border border-on-surface"></div>
+              <div className="flex items-center justify-between">
+                <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">SECTOR 03</span>
+                <SectorBadge category="food" />
               </div>
-              <p className="font-body-sm text-body-sm text-on-surface leading-normal">
+              <h3 className="font-headline text-headline-sm uppercase text-on-surface font-bold mt-2">FOOD &amp; DIET</h3>
+              <div className="my-space-md">
+                <div className="font-display text-4xl lg:text-5xl text-on-surface font-bold tracking-tight leading-none">772</div>
+                <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold mt-1">kg CO₂e • 16.0% SHARE</div>
+              </div>
+              <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
                 Ruminant animal protein logged 3x/week. Regional dairy consumption accounts for 38% of food-related Scope 3 emissions.
               </p>
             </div>
@@ -439,14 +449,17 @@ export default function LandingPage() {
 
           <div className="p-space-lg bg-surface-container-lowest flex flex-col justify-between">
             <div>
-              <div className="w-full h-1.5 bg-yellow-accent mb-space-sm border border-on-surface"></div>
-              <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">SECTOR 04</span>
-              <h3 className="font-headline text-headline-sm uppercase text-on-surface font-bold mt-1">GOODS &amp; SERVICES</h3>
-              <div className="my-space-md">
-                <div className="font-display text-headline-xl text-on-surface font-bold leading-none">385</div>
-                <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">kg CO₂e • 8.0% SHARE</div>
+              <div className="w-full h-2 bg-[#FFC700] mb-space-sm border border-on-surface"></div>
+              <div className="flex items-center justify-between">
+                <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">SECTOR 04</span>
+                <SectorBadge category="waste" />
               </div>
-              <p className="font-body-sm text-body-sm text-on-surface leading-normal">
+              <h3 className="font-headline text-headline-sm uppercase text-on-surface font-bold mt-2">GOODS &amp; SERVICES</h3>
+              <div className="my-space-md">
+                <div className="font-display text-4xl lg:text-5xl text-on-surface font-bold tracking-tight leading-none">385</div>
+                <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold mt-1">kg CO₂e • 8.0% SHARE</div>
+              </div>
+              <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
                 Amortized consumer electronics, apparel lifecycle cycles, and cloud SaaS infrastructure allocation.
               </p>
             </div>
