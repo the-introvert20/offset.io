@@ -11,3 +11,4 @@ export type { CharacterType, CharacterState, PixelCharacterProps } from './Pixel
 
 export { PixelEarthAnimated } from './PixelEarthAnimated';
 export type { PixelEarthAnimatedProps } from './PixelEarthAnimated';
+export { default as PixelBlast } from './PixelBlast';
