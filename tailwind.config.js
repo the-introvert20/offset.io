@@ -9,16 +9,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Stitch Offset Editorial Color Palette
-        'surface': '#fcf9f8',
-        'surface-dim': '#dcd9d9',
-        'surface-bright': '#fcf9f8',
-        'surface-container-lowest': '#ffffff',
-        'surface-container-low': '#f6f3f2',
-        'surface-container': '#f0edec',
-        'surface-container-high': '#ebe7e7',
-        'surface-container-highest': '#e5e2e1',
-        'surface-variant': '#e5e2e1',
+        // Stitch Offset Editorial Color Palette: Restrained light-neutral broadsheet
+        'surface': '#f0ede8',
+        'surface-dim': '#d0cbc1',
+        'surface-bright': '#faf8f5',
+        'surface-container-lowest': '#faf8f5',
+        'surface-container-low': '#ece7df',
+        'surface-container': '#e5e0d8',
+        'surface-container-high': '#ded8cf',
+        'surface-container-highest': '#d4cec4',
+        'surface-variant': '#d4cec4',
         'on-surface': '#1c1b1b',
         'on-surface-variant': '#444557',
         'inverse-surface': '#313030',
@@ -55,7 +55,7 @@ module.exports = {
         'on-error': '#ffffff',
         'error-container': '#ffdad6',
         'on-error-container': '#93000a',
-        'background': '#fcf9f8',
+        'background': '#f0ede8',
         'on-background': '#1c1b1b',
         // Specific Spot Colors from Stitch Design
         'cyan-accent': '#00B2FE',

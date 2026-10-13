@@ -279,9 +279,9 @@ export default function DiaryPage() {
               <div>
                 <label htmlFor="diary-category" className="font-label-caps-sm uppercase font-bold text-on-surface block mb-1 flex items-center gap-space-xs">
                   {category === 'TRANSPORTATION' ? <PixelIcon name="petrol-car" size={14} /> :
-                   category === 'FOOD' ? <PixelIcon name="utensils" size={14} /> :
-                   category === 'ENERGY' ? <PixelIcon name="grid-bolt" size={14} /> :
-                   <PixelIcon name="daily-log" size={14} />}
+                    category === 'FOOD' ? <PixelIcon name="utensils" size={14} /> :
+                      category === 'ENERGY' ? <PixelIcon name="grid-bolt" size={14} /> :
+                        <PixelIcon name="daily-log" size={14} />}
                   What kind of activity?
                 </label>
                 <select
@@ -398,47 +398,47 @@ export default function DiaryPage() {
                   {entries.map((entry) => {
                     const labels = diaryDisplayLabels(entry.category, entry.activityType, entry.subtype);
                     return (
-                    <div
-                      key={entry.id}
-                      className="p-space-sm bg-surface-container-lowest flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 hover:bg-surface-container-low transition-none"
-                    >
-                      <div className="flex items-center space-x-space-sm">
-                        <span className="font-mono text-xs font-bold text-on-surface-variant w-24 shrink-0">
-                          {formatEntryDate(entry.date)}
-                        </span>
-                        <span className="px-space-xs py-0.5 border border-on-surface bg-surface-container font-bold">
-                          {labels.categoryLabel}
-                        </span>
-                        <div>
-                          <div className="font-bold text-on-surface">
-                            {labels.activityLabel}
-                            {' · '}
-                            {labels.subtypeLabel}
-                          </div>
-                          {entry.notes && (
-                            <div className="font-body-sm text-body-sm text-on-surface-variant italic font-normal normal-case">
-                              {entry.notes}
+                      <div
+                        key={entry.id}
+                        className="p-space-sm bg-surface-container-lowest flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 hover:bg-surface-container-low transition-none"
+                      >
+                        <div className="flex items-center space-x-space-sm">
+                          <span className="font-mono text-xs font-bold text-on-surface-variant w-24 shrink-0">
+                            {formatEntryDate(entry.date)}
+                          </span>
+                          <span className="px-space-xs py-0.5 border border-on-surface bg-surface-container font-bold">
+                            {labels.categoryLabel}
+                          </span>
+                          <div>
+                            <div className="font-bold text-on-surface">
+                              {labels.activityLabel}
+                              {' · '}
+                              {labels.subtypeLabel}
                             </div>
-                          )}
+                            {entry.notes && (
+                              <div className="font-body-sm text-body-sm text-on-surface-variant italic font-normal normal-case">
+                                {entry.notes}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-space-md w-full sm:w-auto justify-between border-t sm:border-t-0 pt-1 sm:pt-0">
+                          <span className="font-mono text-xs font-normal">
+                            {entry.quantity} {entry.unit}
+                          </span>
+                          <span className="font-display font-bold text-error text-sm">
+                            +{entry.emissionsKg.toFixed(2)} kg CO₂e
+                          </span>
+                          <ConfirmButton
+                            label="✕"
+                            confirmLabel="Delete?"
+                            ariaLabel={`Delete entry from ${formatEntryDate(entry.date)}`}
+                            onConfirm={() => handleDeleteEntry(entry.id)}
+                            className="text-error hover:underline font-bold text-xs"
+                          />
                         </div>
                       </div>
-
-                      <div className="flex items-center space-x-space-md w-full sm:w-auto justify-between border-t sm:border-t-0 pt-1 sm:pt-0">
-                        <span className="font-mono text-xs font-normal">
-                          {entry.quantity} {entry.unit}
-                        </span>
-                        <span className="font-display font-bold text-error text-sm">
-                          +{entry.emissionsKg.toFixed(2)} kg CO₂e
-                        </span>
-                        <ConfirmButton
-                          label="✕"
-                          confirmLabel="Delete?"
-                          ariaLabel={`Delete entry from ${formatEntryDate(entry.date)}`}
-                          onConfirm={() => handleDeleteEntry(entry.id)}
-                          className="text-error hover:underline font-bold text-xs"
-                        />
-                      </div>
-                    </div>
                     );
                   })}
                 </div>

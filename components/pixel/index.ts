@@ -8,3 +8,6 @@ export type { PixelIconName, PixelIconProps } from './PixelIcons';
 
 export { PixelCharacter, resolveCharacterState } from './PixelCharacters';
 export type { CharacterType, CharacterState, PixelCharacterProps } from './PixelCharacters';
+
+export { PixelEarthAnimated } from './PixelEarthAnimated';
+export type { PixelEarthAnimatedProps } from './PixelEarthAnimated';

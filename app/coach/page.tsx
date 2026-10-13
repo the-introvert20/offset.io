@@ -181,11 +181,10 @@ export default function CoachPage() {
               >
                 {/* Avatar */}
                 <div
-                  className={`w-9 h-9 border border-on-surface flex items-center justify-center shrink-0 ${
-                    msg.sender === 'user'
+                  className={`w-9 h-9 border border-on-surface flex items-center justify-center shrink-0 ${msg.sender === 'user'
                       ? 'bg-on-surface text-surface-container-lowest'
                       : 'bg-surface-container-lowest'
-                  }`}
+                    }`}
                 >
                   {msg.sender === 'user' ? (
                     <span className="material-symbols-outlined text-[18px]" aria-hidden="true">person</span>
@@ -200,11 +199,10 @@ export default function CoachPage() {
 
                 {/* Message Bubble */}
                 <div
-                  className={`border border-on-surface p-space-sm max-w-2xl space-y-space-xs ${
-                    msg.sender === 'user'
+                  className={`border border-on-surface p-space-sm max-w-2xl space-y-space-xs ${msg.sender === 'user'
                       ? 'bg-on-surface text-surface-container-lowest'
                       : 'bg-surface-container-lowest text-on-surface'
-                  }`}
+                    }`}
                 >
                   <p className="font-body-md text-body-md leading-relaxed">{msg.text}</p>
 

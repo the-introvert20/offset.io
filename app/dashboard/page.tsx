@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { classifyDashboardResponse, type DashboardViewState } from '@/lib/dashboard-state';
 import { getUnifiedCategoryBreakdown, type UnifiedCategoryKey } from '@/lib/taxonomy';
 import { getComparisons } from '@/lib/comparisons';
-import { PixelIcon, PixelCharacter, resolveCharacterState } from '@/components/pixel';
+import { PixelIcon, PixelCharacter, resolveCharacterState, PixelEarthAnimated } from '@/components/pixel';
 
 interface DashboardData {
   footprint: {
@@ -200,7 +200,7 @@ export default function DashboardPage() {
   const activityCount = footprint.calculations?.length ?? 0;
 
   return (
-    <div className="flex flex-col w-full text-on-surface bg-surface-container-lowest">
+    <div className="flex flex-col w-full text-on-surface bg-background">
       {/* 1. Status band */}
       <section className="w-full bg-surface-container-low border-b border-on-surface flex flex-col md:flex-row items-stretch justify-between text-on-surface select-none">
         <div className="px-space-md py-space-xs border-b md:border-b-0 md:border-r border-on-surface flex items-center space-x-space-sm bg-surface-container-lowest">
@@ -389,12 +389,12 @@ export default function DashboardPage() {
       )}
 
       {/* 2. THE EDITORIAL DASHBOARD SPREAD */}
-      <section className="w-full border-b border-on-surface bg-surface-container-lowest">
+      <section className="w-full border-b border-on-surface bg-background">
         <div className="w-full grid grid-cols-1 lg:grid-cols-12 border-b border-on-surface">
-          {/* Box 1 (7 cols): Main footprint number */}
-          <div className="lg:col-span-7 p-space-lg md:p-space-xl border-b lg:border-b-0 lg:border-r border-on-surface flex flex-col justify-between">
+          {/* Box 1 (6 cols): Main footprint number */}
+          <div className="lg:col-span-6 bg-surface-container-lowest p-space-md md:p-space-lg border-b lg:border-b-0 lg:border-r border-on-surface flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between border-b border-on-surface pb-space-sm mb-space-md">
+              <div className="flex items-center justify-between border-b border-on-surface pb-space-xs mb-space-sm">
                 <span className="font-label-caps-md text-label-caps-md uppercase text-on-surface font-bold tracking-wider flex items-center gap-space-xs">
                   <PixelIcon name="footprint" size={16} />
                   Your current footprint
@@ -403,12 +403,12 @@ export default function DashboardPage() {
                   Based on {activityCount} {activityCount === 1 ? 'activity' : 'activities'}
                 </span>
               </div>
-              <div className="py-space-md">
-                <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant mb-space-xs font-bold">
+              <div className="py-space-xs">
+                <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant mb-1 font-bold">
                   Estimated for the year
                 </div>
                 <div className="flex flex-wrap items-baseline gap-space-sm">
-                  <span className="font-display text-[clamp(3rem,12vw,6.875rem)] leading-none tracking-tighter text-on-surface font-bold">
+                  <span className="font-display text-[clamp(2.75rem,7vw,5.5rem)] leading-none tracking-tighter text-on-surface font-bold">
                     {annualTonnes}
                   </span>
                   <div className="flex flex-col">
@@ -444,19 +444,19 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Footprint Comparison Context */}
-                <div className="mt-space-md pt-space-md border-t border-on-surface/20 space-y-space-xs">
+                <div className="mt-space-sm pt-space-sm border-t border-on-surface/20 space-y-space-xs">
                   <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
                     In plain terms
                   </div>
                   <div className="space-y-1 font-body-sm text-body-sm text-on-surface-variant">
                     <div className="flex items-start gap-space-xs">
-                      <span className="text-primary">•</span>
+                      <span className="text-primary font-bold">•</span>
                       <span>
                         Equivalent to driving about <strong className="text-on-surface">{Math.round((currentTotalKg / 0.192) / 1000).toLocaleString('en-US')} km</strong> in a petrol car
                       </span>
                     </div>
                     <div className="flex items-start gap-space-xs">
-                      <span className="text-primary">•</span>
+                      <span className="text-primary font-bold">•</span>
                       <span>
                         The global average is <strong className="text-on-surface">4.0 t</strong>, the 1.5°C target is <strong className="text-on-surface">2.3 t</strong>
                         {annualTonnes > 2.3 && (
@@ -478,7 +478,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="pt-space-md border-t border-on-surface flex flex-wrap items-center justify-between gap-space-sm">
+            <div className="mt-space-md pt-space-sm border-t border-on-surface flex flex-wrap items-center justify-between gap-space-sm">
               <div className="inline-flex items-center space-x-space-xs px-space-sm py-space-xs bg-surface-container border border-on-surface">
                 <span className="material-symbols-outlined text-primary text-[18px]" aria-hidden="true">
                   {hasGoal ? 'trending_down' : 'flag'}
@@ -499,11 +499,11 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Box 2 (5 cols): Top suggestion - Neutral/editorial styled */}
-          <div className="lg:col-span-5 bg-surface-container text-on-surface p-space-lg md:p-space-xl flex flex-col justify-between border-b lg:border-b-0">
+          {/* Box 2 (6 cols): Top suggestion - Neutral/editorial styled with tinted background */}
+          <div className="lg:col-span-6 bg-surface-container text-on-surface p-space-md md:p-space-lg flex flex-col justify-between border-b lg:border-b-0">
             {topRec ? (
               <>
-                <div className="space-y-space-sm">
+                <div className="space-y-space-xs">
                   <div className="flex items-center justify-between">
                     <span className="font-label-caps-md text-label-caps-md uppercase tracking-wider px-space-xs py-0.5 bg-surface-container-lowest text-on-surface border border-on-surface font-bold">
                       Top opportunity
@@ -518,13 +518,19 @@ export default function DashboardPage() {
                       <PixelIcon name="reduction" size={24} />
                     )}
                   </div>
-                  <div className="pt-space-md">
-                    <h2 className="font-headline text-headline-xl uppercase font-bold leading-tight tracking-tight mt-1">
+
+                  {/* Animated Pixel Earth — Stitch Day/Night component */}
+                  <div className="flex justify-center py-space-xs">
+                    <PixelEarthAnimated size={160} loopSeconds={12} />
+                  </div>
+
+                  <div>
+                    <h2 className="font-headline text-headline-lg uppercase font-bold leading-tight tracking-tight">
                       {topRec.title}
                     </h2>
                   </div>
-                  <div className="py-space-sm flex items-baseline space-x-space-xs">
-                    <span className="font-display text-[clamp(2.5rem,6vw,3.5rem)] font-bold leading-none text-primary">
+                  <div className="py-space-xs flex items-baseline space-x-space-xs">
+                    <span className="font-display text-[clamp(2.25rem,5vw,3rem)] font-bold leading-none text-primary">
                       −{Math.round(topRec.estimatedReductionKg / 12)}
                     </span>
                     <span className="font-headline text-headline-sm uppercase font-bold">
@@ -536,7 +542,7 @@ export default function DashboardPage() {
                   </p>
                 </div>
 
-                <div className="pt-space-lg">
+                <div className="pt-space-md">
                   <Link
                     href="/reduction-plan"
                     className="min-h-[44px] w-full py-space-sm px-space-md bg-on-surface text-surface-container-lowest border border-on-surface font-label-caps-md text-label-caps-md uppercase font-bold hover:bg-primary transition-none flex items-center justify-between"
@@ -547,17 +553,20 @@ export default function DashboardPage() {
                 </div>
               </>
             ) : (
-              <div className="space-y-space-sm">
+              <div className="space-y-space-xs">
                 <span className="font-label-caps-md text-label-caps-md uppercase tracking-wider px-space-xs py-0.5 bg-surface-container-lowest text-on-surface border border-on-surface font-bold">
                   Looking good
                 </span>
-                <h2 className="font-headline text-headline-xl uppercase font-bold leading-tight tracking-tight pt-space-md">
+                <div className="flex justify-center py-space-xs">
+                  <PixelEarthAnimated size={160} loopSeconds={12} />
+                </div>
+                <h2 className="font-headline text-headline-lg uppercase font-bold leading-tight tracking-tight pt-space-xs">
                   No big reductions left to suggest
                 </h2>
                 <p className="font-body-md text-body-md leading-snug text-on-surface-variant">
                   Your footprint is already low across every category. Keep logging daily activities to hold this level.
                 </p>
-                <div className="pt-space-lg">
+                <div className="pt-space-md">
                   <Link
                     href="/diary"
                     className="min-h-[44px] w-full py-space-sm px-space-md bg-on-surface text-surface-container-lowest border border-on-surface font-label-caps-md text-label-caps-md uppercase font-bold hover:bg-primary transition-none flex items-center justify-between"
@@ -572,8 +581,8 @@ export default function DashboardPage() {
         </div>
 
         {/* 3. Category breakdown */}
-        <div className="w-full p-space-lg md:p-space-xl border-b border-on-surface bg-surface-container-lowest">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-space-lg border-b border-on-surface pb-space-sm gap-space-sm">
+        <div className="w-full p-space-md md:p-space-lg border-b border-on-surface bg-surface-container-lowest">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-space-md border-b border-on-surface pb-space-xs gap-space-sm">
             <div>
               <div className="font-label-caps-sm text-label-caps-sm uppercase tracking-widest text-primary font-bold">
                 Where it comes from
@@ -596,11 +605,10 @@ export default function DashboardPage() {
                   key={layer.key}
                   onClick={() => setActivePulseLayer(layer.key)}
                   aria-pressed={activePulseLayer === layer.key}
-                  className={`min-h-[44px] px-space-sm py-1 font-label-caps-sm text-label-caps-sm uppercase font-bold border border-on-surface transition-none ${
-                    activePulseLayer === layer.key
-                      ? 'bg-on-surface text-surface-container-lowest'
-                      : 'bg-surface-container-lowest text-on-surface hover:bg-surface-container-high'
-                  }`}
+                  className={`min-h-[44px] px-space-sm py-1 font-label-caps-sm text-label-caps-sm uppercase font-bold border border-on-surface transition-none ${activePulseLayer === layer.key
+                    ? 'bg-on-surface text-surface-container-lowest'
+                    : 'bg-surface-container-lowest text-on-surface hover:bg-surface-container-high'
+                    }`}
                 >
                   {layer.label}
                 </button>
@@ -610,11 +618,11 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 border border-on-surface">
             {/* Visual breakdown diagram */}
-            <div className="lg:col-span-6 p-space-lg border-b lg:border-b-0 lg:border-r border-on-surface bg-surface-container-low flex flex-col items-center justify-center relative min-h-[340px]">
-              <svg className="w-full max-w-[320px] h-auto text-on-surface" fill="none" viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Chart showing footprint split across transport, home energy, food, and goods and waste">
+            <div className="lg:col-span-6 p-space-md border-b lg:border-b-0 lg:border-r border-on-surface bg-surface-container-low flex flex-col items-center justify-center relative min-h-[290px]">
+              <svg className="w-full max-w-[300px] h-auto text-on-surface" fill="none" viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Chart showing footprint split across transport, home energy, food, and goods and waste">
                 <line stroke="currentColor" strokeDasharray="2 3" strokeWidth="1" x1="0" x2="340" y1="170" y2="170"></line>
                 <line stroke="currentColor" strokeDasharray="2 3" strokeWidth="1" x1="170" x2="170" y1="0" y2="340"></line>
-                
+
                 {hasGoal && (
                   <>
                     <circle cx="170" cy="170" fill="none" r="50" stroke="#001fce" strokeDasharray="4 4" strokeWidth="2"></circle>
@@ -648,14 +656,14 @@ export default function DashboardPage() {
                   OFT
                 </text>
               </svg>
-              <div className="absolute bottom-space-sm left-space-sm font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
+              <div className="absolute bottom-space-xs left-space-sm font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
                 {activityCount} {activityCount === 1 ? 'activity' : 'activities'} counted
               </div>
             </div>
 
             {/* Real-time Category Breakdown Bar */}
-            <div className="lg:col-span-6 p-space-lg flex flex-col justify-between bg-surface-container-lowest">
-              <div className="space-y-space-md">
+            <div className="lg:col-span-6 p-space-md flex flex-col justify-between bg-surface-container-lowest">
+              <div className="space-y-space-sm">
                 <div className="space-y-1">
                   <div className="flex items-center justify-between font-label-caps-sm text-label-caps-sm uppercase font-bold">
                     <span className="flex items-center space-x-1">
@@ -709,7 +717,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="mt-space-md pt-space-sm border-t border-on-surface flex items-center justify-between font-label-caps-sm text-label-caps-sm uppercase text-on-surface font-bold">
+              <div className="mt-space-sm pt-space-xs border-t border-on-surface flex items-center justify-between font-label-caps-sm text-label-caps-sm uppercase text-on-surface font-bold">
                 <span>Total: {Math.round(currentTotalKg).toLocaleString('en-US')} kg CO₂e (100.0%)</span>
                 <Link href="/calculate" className="min-h-[44px] inline-flex items-center text-primary hover:underline">
                   How we calculate this →
@@ -721,12 +729,12 @@ export default function DashboardPage() {
 
         {/* 4. 4-COLUMN SECTOR BREAKDOWN GRID */}
         <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-          <div className="p-space-lg border-b lg:border-b-0 border-r border-on-surface bg-surface-container-lowest flex flex-col justify-between">
+          <div className="p-space-md border-b lg:border-b-0 border-r border-on-surface bg-surface-container-lowest flex flex-col justify-between">
             <div>
               <div className="w-full h-1.5 bg-cyan-accent mb-space-sm border border-on-surface"></div>
               <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">SECTOR 01</span>
               <h3 className="font-headline text-headline-sm uppercase text-on-surface font-bold mt-1">TRANSPORT</h3>
-              <div className="my-space-md">
+              <div className="my-space-sm">
                 <div className="font-display text-headline-xl text-on-surface font-bold leading-none">{Math.round(transitData.annualEmissionsKg)}</div>
                 <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">kg CO₂e • {transitData.percentage.toFixed(1)}% SHARE</div>
               </div>
@@ -734,7 +742,7 @@ export default function DashboardPage() {
                 Direct vehicle travel, flights, and public mobility.
               </p>
             </div>
-            <div className="pt-space-md mt-space-md border-t border-on-surface flex items-center justify-between">
+            <div className="pt-space-sm mt-space-sm border-t border-on-surface flex items-center justify-between">
               <Link href="/simulator" className="font-label-caps-sm text-label-caps-sm uppercase text-primary font-bold hover:underline">
                 SIMULATE SHIFT →
               </Link>
@@ -742,12 +750,12 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="p-space-lg border-b lg:border-b-0 md:border-r lg:border-r border-on-surface bg-surface-container-lowest flex flex-col justify-between">
+          <div className="p-space-md border-b lg:border-b-0 md:border-r lg:border-r border-on-surface bg-surface-container-lowest flex flex-col justify-between">
             <div>
               <div className="w-full h-1.5 bg-primary mb-space-sm border border-on-surface"></div>
               <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">SECTOR 02</span>
               <h3 className="font-headline text-headline-sm uppercase text-on-surface font-bold mt-1">HOME ENERGY</h3>
-              <div className="my-space-md">
+              <div className="my-space-sm">
                 <div className="font-display text-headline-xl text-on-surface font-bold leading-none">{Math.round(energyData.annualEmissionsKg)}</div>
                 <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">kg CO₂e • {energyData.percentage.toFixed(1)}% SHARE</div>
               </div>
@@ -755,7 +763,7 @@ export default function DashboardPage() {
                 Grid electricity load and residential thermal baseline power.
               </p>
             </div>
-            <div className="pt-space-md mt-space-md border-t border-on-surface flex items-center justify-between">
+            <div className="pt-space-sm mt-space-sm border-t border-on-surface flex items-center justify-between">
               <Link href="/simulator" className="font-label-caps-sm text-label-caps-sm uppercase text-primary font-bold hover:underline">
                 SIMULATE SOLAR →
               </Link>
@@ -763,12 +771,12 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="p-space-lg border-b md:border-b-0 border-r border-on-surface bg-surface-container-lowest flex flex-col justify-between">
+          <div className="p-space-md border-b md:border-b-0 border-r border-on-surface bg-surface-container-lowest flex flex-col justify-between">
             <div>
               <div className="w-full h-1.5 bg-coral-accent mb-space-sm border border-on-surface"></div>
               <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">SECTOR 03</span>
               <h3 className="font-headline text-headline-sm uppercase text-on-surface font-bold mt-1">FOOD</h3>
-              <div className="my-space-md">
+              <div className="my-space-sm">
                 <div className="font-display text-headline-xl text-on-surface font-bold leading-none">{Math.round(foodData.annualEmissionsKg)}</div>
                 <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">kg CO₂e • {foodData.percentage.toFixed(1)}% SHARE</div>
               </div>
@@ -776,7 +784,7 @@ export default function DashboardPage() {
                 Dietary protein patterns and agricultural supply chain footprint.
               </p>
             </div>
-            <div className="pt-space-md mt-space-md border-t border-on-surface flex items-center justify-between">
+            <div className="pt-space-sm mt-space-sm border-t border-on-surface flex items-center justify-between">
               <Link href="/simulator" className="font-label-caps-sm text-label-caps-sm uppercase text-primary font-bold hover:underline">
                 SIMULATE PLANT DAYS →
               </Link>
@@ -784,12 +792,12 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="p-space-lg bg-surface-container-lowest flex flex-col justify-between">
+          <div className="p-space-md bg-surface-container-lowest flex flex-col justify-between">
             <div>
               <div className="w-full h-1.5 bg-yellow-accent mb-space-sm border border-on-surface"></div>
               <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">SECTOR 04</span>
               <h3 className="font-headline text-headline-sm uppercase text-on-surface font-bold mt-1">GOODS &amp; WASTE</h3>
-              <div className="my-space-md">
+              <div className="my-space-sm">
                 <div className="font-display text-headline-xl text-on-surface font-bold leading-none">{Math.round(goodsData.annualEmissionsKg)}</div>
                 <div className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">kg CO₂e • {goodsData.percentage.toFixed(1)}% SHARE</div>
               </div>
@@ -797,7 +805,7 @@ export default function DashboardPage() {
                 Municipal landfill waste, recycling diversion, and consumer goods.
               </p>
             </div>
-            <div className="pt-space-md mt-space-md border-t border-on-surface flex items-center justify-between">
+            <div className="pt-space-sm mt-space-sm border-t border-on-surface flex items-center justify-between">
               <Link href="/reduction-plan" className="font-label-caps-sm text-label-caps-sm uppercase text-primary font-bold hover:underline">
                 REDUCTION PLAN →
               </Link>
@@ -810,9 +818,9 @@ export default function DashboardPage() {
       {/* 5. Goal progress & insights */}
       <section className="w-full grid grid-cols-1 lg:grid-cols-12 border-b border-on-surface">
         {/* Left: Goal progress */}
-        <div className="lg:col-span-6 p-space-lg md:p-space-xl border-b lg:border-b-0 lg:border-r border-on-surface bg-surface-container-lowest flex flex-col justify-between">
+        <div className="lg:col-span-6 p-space-md md:p-space-lg border-b lg:border-b-0 lg:border-r border-on-surface bg-surface-container-lowest flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between border-b border-on-surface pb-space-sm mb-space-md">
+            <div className="flex items-center justify-between border-b border-on-surface pb-space-xs mb-space-sm">
               <span className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface">
                 Your goal progress
               </span>
@@ -823,7 +831,7 @@ export default function DashboardPage() {
 
             {hasGoal && targetCapKg ? (
               <>
-                <div className="py-space-md">
+                <div className="py-space-sm">
                   <span className="font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
                     Your yearly goal
                   </span>
@@ -838,7 +846,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Segmented Heavy Bar */}
-                <div className="space-y-space-xs my-space-md">
+                <div className="space-y-space-xs my-space-sm">
                   <div className="w-full h-10 border border-on-surface flex">
                     <div
                       className="h-full bg-on-surface flex items-center justify-center text-surface-container-lowest font-label-caps-sm text-label-caps-sm font-bold truncate px-2"
@@ -862,14 +870,13 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <div className="p-space-md border border-on-surface bg-surface-container-low mt-space-lg space-y-space-xs">
+                <div className="p-space-sm border border-on-surface bg-surface-container-low mt-space-md space-y-space-xs">
                   <div className="flex items-center justify-between">
                     <span className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface">
                       What this means
                     </span>
-                    <span className={`px-space-xs py-0.5 font-label-caps-sm text-label-caps-sm uppercase font-bold ${
-                      currentTotalKg <= targetCapKg ? 'bg-primary text-on-primary' : 'bg-coral-accent text-on-surface'
-                    }`}>
+                    <span className={`px-space-xs py-0.5 font-label-caps-sm text-label-caps-sm uppercase font-bold ${currentTotalKg <= targetCapKg ? 'bg-primary text-on-primary' : 'bg-coral-accent text-on-surface'
+                      }`}>
                       {currentTotalKg <= targetCapKg ? 'On track' : 'Over goal'}
                     </span>
                   </div>
@@ -882,7 +889,7 @@ export default function DashboardPage() {
                 </div>
               </>
             ) : (
-              <div className="py-space-xl text-center space-y-space-sm">
+              <div className="py-space-lg text-center space-y-space-sm">
                 <span className="material-symbols-outlined text-[36px] text-on-surface-variant block" aria-hidden="true">
                   track_changes
                 </span>
@@ -904,7 +911,7 @@ export default function DashboardPage() {
             )}
           </div>
 
-          <div className="pt-space-md border-t border-on-surface flex items-center justify-between font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
+          <div className="pt-space-sm border-t border-on-surface flex items-center justify-between font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
             <span>Goal updates everywhere automatically</span>
             <Link href="/goals" className="min-h-[44px] inline-flex items-center text-primary hover:underline">
               {hasGoal ? 'Change my goal →' : 'Set a goal →'}
@@ -913,9 +920,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Right: Latest insights */}
-        <div className="lg:col-span-6 p-space-lg md:p-space-xl bg-surface-container-lowest flex flex-col justify-between">
+        <div className="lg:col-span-6 p-space-md md:p-space-lg bg-surface-container-lowest flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between border-b border-on-surface pb-space-sm mb-space-md">
+            <div className="flex items-center justify-between border-b border-on-surface pb-space-xs mb-space-sm">
               <span className="font-label-caps-md text-label-caps-md uppercase font-bold text-on-surface">
                 Latest insights
               </span>
@@ -929,9 +936,8 @@ export default function DashboardPage() {
                 insights.slice(0, 3).map((ins) => (
                   <div key={ins.id} className="p-space-sm border border-on-surface bg-surface-container-lowest flex items-start justify-between gap-2">
                     <div className="flex items-start space-x-space-sm">
-                      <span className={`w-6 h-6 flex items-center justify-center font-bold text-xs shrink-0 ${
-                        ins.isAnomaly ? 'bg-coral-accent text-on-surface' : 'bg-primary text-white'
-                      }`} aria-hidden="true">
+                      <span className={`w-6 h-6 flex items-center justify-center font-bold text-xs shrink-0 ${ins.isAnomaly ? 'bg-coral-accent text-on-surface' : 'bg-primary text-white'
+                        }`} aria-hidden="true">
                         !
                       </span>
                       <div>
@@ -953,7 +959,7 @@ export default function DashboardPage() {
               )}
             </div>
 
-            <div className="mt-space-lg">
+            <div className="mt-space-md">
               <blockquote className="p-space-md bg-surface-container border-l-4 border-on-surface">
                 <p className="font-body-md text-body-md text-on-surface leading-relaxed">
                   How sure are we? {uncertainty?.explanation} Likely range: {uncertainty?.minAnnualTonnes}–{uncertainty?.maxAnnualTonnes} tonnes per year.
@@ -965,7 +971,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="pt-space-md border-t border-on-surface flex items-center justify-between font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
+          <div className="pt-space-sm border-t border-on-surface flex items-center justify-between font-label-caps-sm text-label-caps-sm uppercase text-on-surface-variant font-bold">
             <span>New notes appear as you log</span>
             <Link href="/coach" className="min-h-[44px] inline-flex items-center text-primary hover:underline">
               Ask the coach →

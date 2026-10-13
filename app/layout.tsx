@@ -23,7 +23,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="flex flex-col min-h-screen bg-surface-container-lowest text-on-surface antialiased font-body">
+      <body className="flex flex-col min-h-screen bg-background text-on-surface antialiased font-body">
         <Navbar />
         <main className="flex-1 w-full pt-14">{children}</main>
         <Footer />

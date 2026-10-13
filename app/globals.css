@@ -9,7 +9,7 @@
   html, body {
     margin: 0;
     padding: 0;
-    background-color: #fcf9f8;
+    background-color: #f0ede8;
     color: #1c1b1b;
     font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -75,7 +75,7 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #f0edec;
+  background: #e5e0d8;
 }
 ::-webkit-scrollbar-thumb {
   background: #1c1b1b;
