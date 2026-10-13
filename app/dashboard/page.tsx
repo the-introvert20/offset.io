@@ -298,17 +298,17 @@ export default function DashboardPage() {
             onClick={() => setConfidenceTooltipOpen((v) => !v)}
             onBlur={() => setTimeout(() => setConfidenceTooltipOpen(false), 250)}
             aria-expanded={confidenceTooltipOpen}
-            aria-label="View calculation confidence and variance bounds"
-            className="min-h-[32px] inline-flex items-center gap-1.5 px-2 py-1 bg-surface-container-lowest hover:bg-surface-container-high border border-on-surface font-label-caps-sm text-label-caps-sm uppercase font-bold text-on-surface transition-none shadow-[1px_1px_0px_#1c1b1b]"
+            aria-label={`Confidence: ${uncertainty?.overallConfidence || 'HIGH'}. View calculation confidence and variance bounds.`}
+            className="min-h-[32px] inline-flex items-center gap-1.5 px-2 py-1 bg-surface-container-lowest hover:bg-surface-container-high border border-on-surface font-label-caps-sm text-label-caps-sm font-bold text-on-surface transition-none shadow-[1px_1px_0px_#1c1b1b]"
           >
             <span className="material-symbols-outlined text-[16px] text-primary" aria-hidden="true">
               tune
             </span>
             <span>Confidence:</span>
             <span className="px-1 py-0.5 bg-[#0022CC] text-white text-[10px] font-bold">
-              {uncertainty?.overallConfidence || 'MEDIUM'}
+              {uncertainty?.overallConfidence || 'HIGH'}
             </span>
-            <span className="material-symbols-outlined text-[14px] text-on-surface-variant">
+            <span className="material-symbols-outlined text-[14px] text-on-surface-variant" aria-hidden="true">
               info
             </span>
           </button>
@@ -529,8 +529,8 @@ export default function DashboardPage() {
 
                     {/* 1.5°C Benchmark Badge Card */}
                     <div className="p-2.5 bg-surface-container border border-on-surface flex items-start gap-2.5">
-                      <div className={`p-1.5 border border-on-surface shrink-0 font-bold ${annualTonnes <= 2.3 ? 'bg-primary text-white' : 'bg-[#FF4D30] text-on-surface'}`}>
-                        <span className="material-symbols-outlined text-[18px]">
+                      <div className={`p-1.5 border border-on-surface shrink-0 font-bold ${annualTonnes <= 2.3 ? 'bg-primary text-white' : 'bg-[#B92814] text-white'}`}>
+                        <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                           {annualTonnes <= 2.3 ? 'verified' : 'warning'}
                         </span>
                       </div>
@@ -540,7 +540,7 @@ export default function DashboardPage() {
                           {annualTonnes <= 2.3 ? (
                             <span className="text-primary">On Track (≤ 2.3 t)</span>
                           ) : (
-                            <span className="text-[#FF4D30]">{(annualTonnes - 2.3).toFixed(1)} t over</span>
+                            <span className="text-[#B92814]">{(annualTonnes - 2.3).toFixed(1)} t over</span>
                           )}
                         </div>
                         <div className="text-[11px] text-on-surface-variant">Target: 2.3 t • Avg: 4.0 t</div>
